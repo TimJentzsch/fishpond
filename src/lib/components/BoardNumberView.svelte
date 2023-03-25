@@ -4,22 +4,19 @@
 	export let flipped: boolean = false;
 
 	const indexes = squareIndexes();
-	const reversedIndexes = squareIndexes(true);
-
-	$: rankIndexes = flipped ? indexes : reversedIndexes;
 </script>
 
 <div class="board-number-container">
-	<div class="rank-number-container">
-		{#each rankIndexes as rankIndex}
-			<div class="square-number rank {getSquareColor(rankIndex, 7)}">
+	<div class="rank-number-container" class:flipped>
+		{#each indexes as rankIndex}
+			<div class="square-number rank {getSquareColor(rankIndex, 7)}" class:flipped>
 				{indexToRank(rankIndex)}
 			</div>
 		{/each}
 	</div>
-	<div class="file-number-container">
+	<div class="file-number-container" class:flipped>
 		{#each indexes as fileIndex}
-			<div class="square-number file {getSquareColor(0, fileIndex)}">
+			<div class="square-number file {getSquareColor(0, fileIndex)}" class:flipped>
 				{indexToFile(fileIndex)}
 			</div>
 		{/each}
@@ -51,6 +48,10 @@
 	}
 
 	.rank-number-container {
+		flex-flow: column-reverse;
+	}
+
+	.flipped.rank-number-container {
 		flex-flow: column;
 	}
 
@@ -63,11 +64,13 @@
 		padding: 0.2em;
 	}
 
-	.square-number.w {
+	.square-number.w,
+	.flipped.square-number.b.file {
 		color: var(--square-black);
 	}
 
-	.square-number.b {
+	.square-number.b,
+	.flipped.square-number.w.file {
 		color: var(--square-white);
 	}
 </style>

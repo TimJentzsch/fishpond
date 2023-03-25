@@ -5,14 +5,11 @@
 	export let flipped: boolean = false;
 
 	const indexes = squareIndexes();
-	const reversedIndexes = squareIndexes(true);
-
-	$: rankIndexes = flipped ? indexes : reversedIndexes;
 </script>
 
 <div class="boardBackground">
-	{#each rankIndexes as rank}
-		<div class="rank">
+	{#each indexes as rank}
+		<div class="rank" class:flipped>
 			{#each indexes as file}
 				<SquareView color={getSquareColor(rank, file)} />
 			{/each}
@@ -31,7 +28,11 @@
 
 	.rank {
 		display: flex;
-		flex-flow: row;
+		flex-flow: row-reverse;
 		flex-grow: 1;
+	}
+
+	.rank.flipped {
+		flex-flow: row;
 	}
 </style>
