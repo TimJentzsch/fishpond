@@ -1,12 +1,17 @@
 <script lang="ts">
 	import SquareView from './SquareView.svelte';
-	import { getSquareColor } from '$lib/board';
+	import { getSquareColor, squareIndexes } from '$lib/board';
 
-	const indexes = [...Array(8).keys()];
+	export let flipped: boolean = false;
+
+	const indexes = squareIndexes();
+	const reversedIndexes = squareIndexes(true);
+
+	$: rankIndexes = flipped ? indexes : reversedIndexes;
 </script>
 
 <div class="boardBackground">
-	{#each indexes as rank}
+	{#each rankIndexes as rank}
 		<div class="rank">
 			{#each indexes as file}
 				<SquareView color={getSquareColor(rank, file)} />

@@ -3,8 +3,18 @@ import type { Color } from 'chess.js';
 export type Rank = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
 export type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
 
+export function squareIndexes(reversed = false): number[] {
+	const indexes = [0, 1, 2, 3, 4, 5, 6, 7];
+
+	if (reversed) {
+		indexes.reverse();
+	}
+
+	return indexes;
+}
+
 export function getSquareColor(rank: number, file: number): Color {
-	return (rank + file) % 2 == 0 ? 'w' : 'b';
+	return (rank + file) % 2 == 0 ? 'b' : 'w';
 }
 
 export function indexToRank(index: number): Rank {
