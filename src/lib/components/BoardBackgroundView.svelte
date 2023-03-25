@@ -1,18 +1,9 @@
 <script lang="ts">
-	import { getSquareColor, squareIndexes } from '$lib/board';
+	import { getSquareColor, getSquareMargins, squareIndexes } from '$lib/board';
 
 	export let flipped: boolean = false;
 
 	const indexes = squareIndexes();
-
-	function getSquareMargins(rank: number, file: number, flipped: boolean): string {
-		const perIndex = 100 / 8;
-
-		const left = file * perIndex;
-		const top = flipped ? rank * perIndex : 100 - perIndex - rank * perIndex;
-
-		return `top: ${top}%; left: ${left}%`;
-	}
 </script>
 
 <div class="boardBackground">
@@ -40,7 +31,7 @@
 		height: calc(100% / 8);
 		position: absolute;
 
-		transition: top 0.25s;
+		transition: top var(--flip-transition-duration);
 	}
 
 	.square.w {

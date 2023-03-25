@@ -1,4 +1,6 @@
 :root {
-  --square-white: #ecd2c1;
-  --square-black: #89502a;
+	--square-white: #ecd2c1;
+	--square-black: #89502a;
+
+	--flip-transition-duration: 0.25s;
 }

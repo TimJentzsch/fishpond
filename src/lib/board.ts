@@ -62,3 +62,12 @@ export function indexToFile(index: number): File {
 			throw Error(`Invalid file index ${index}`);
 	}
 }
+
+export function getSquareMargins(rank: number, file: number, flipped: boolean): string {
+	const perIndex = 100 / 8;
+
+	const left = file * perIndex;
+	const top = flipped ? rank * perIndex : 100 - perIndex - rank * perIndex;
+
+	return `top: ${top}%; left: ${left}%`;
+}
