@@ -1,12 +1,8 @@
 <script lang="ts">
 	import SquareView from './SquareView.svelte';
-	import type { Color } from 'chess.js';
+	import { getSquareColor } from '$lib/board';
 
 	const indexes = [...Array(8).keys()];
-
-	function getSquareColor(rank: number, file: number): Color {
-		return (rank + file) % 2 == 0 ? 'w' : 'b';
-	}
 </script>
 
 <div class="boardBackground">
