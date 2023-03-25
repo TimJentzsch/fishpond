@@ -8,14 +8,14 @@
 
 <div class="board-number-container">
 	<div class="rank-number-container" class:flipped>
-		{#each indexes as rankIndex}
+		{#each indexes as rankIndex (rankIndex)}
 			<div class="square-number rank {getSquareColor(rankIndex, 7)}" class:flipped>
 				{indexToRank(rankIndex)}
 			</div>
 		{/each}
 	</div>
 	<div class="file-number-container" class:flipped>
-		{#each indexes as fileIndex}
+		{#each indexes as fileIndex (fileIndex)}
 			<div class="square-number file {getSquareColor(0, fileIndex)}" class:flipped>
 				{indexToFile(fileIndex)}
 			</div>
