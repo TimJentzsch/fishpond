@@ -1,10 +1,11 @@
 <script lang="ts">
 	import SquareView from './SquareView.svelte';
+	import type { Color } from 'chess.js';
 
 	const indexes = [...Array(8).keys()];
 
-	function getSquareColor(rank: number, file: number): 'white' | 'black' {
-		return (rank + file) % 2 == 0 ? 'white' : 'black';
+	function getSquareColor(rank: number, file: number): Color {
+		return (rank + file) % 2 == 0 ? 'w' : 'b';
 	}
 </script>
 

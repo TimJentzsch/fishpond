@@ -1,5 +1,7 @@
 <script lang="ts">
-	export let color: 'white' | 'black';
+	import type { Color } from 'chess.js';
+
+	export let color: Color;
 </script>
 
 <div class="square {color}" />
@@ -9,11 +11,11 @@
 		flex-grow: 1;
 	}
 
-	.square.white {
+	.square.w {
 		background-color: var(--square-white);
 	}
 
-	.square.black {
+	.square.b {
 		background-color: var(--square-black);
 	}
 </style>
