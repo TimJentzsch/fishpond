@@ -4,3 +4,7 @@
 
 	--flip-transition-duration: 0.25s;
 }
+
+body {
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
