@@ -44,6 +44,7 @@
 	.square {
 		position: absolute;
 		display: flex;
+		user-select: none;
 		width: calc(100% / 8);
 		height: calc(100% / 8);
 

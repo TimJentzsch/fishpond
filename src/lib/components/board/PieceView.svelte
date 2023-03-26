@@ -14,5 +14,6 @@
 	.piece {
 		font-size: 2em;
 		font-weight: bold;
+		user-select: none;
 	}
 </style>
