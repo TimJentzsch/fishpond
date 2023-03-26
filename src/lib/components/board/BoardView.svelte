@@ -1,16 +1,22 @@
 <script lang="ts">
-	import BoardBackgroundView from './layers/BoardSquareLayer.svelte';
-	import BoardNumberView from './layers/BoardNumberLayer.svelte';
+	import type { Chess } from 'chess.js';
+	import BoardBackgroundLayer from './layers/BoardSquareLayer.svelte';
+	import BoardNumberLayer from './layers/BoardNumberLayer.svelte';
+	import BoardPieceLayer from './layers/BoardPieceLayer.svelte';
 
+	export let chess: Chess;
 	export let flipped: boolean = false;
 </script>
 
 <div class="board">
 	<div class="board-layer">
-		<BoardBackgroundView {flipped} />
+		<BoardBackgroundLayer {flipped} />
 	</div>
 	<div class="board-layer">
-		<BoardNumberView {flipped} />
+		<BoardNumberLayer {flipped} />
+	</div>
+	<div class="board-layer">
+		<BoardPieceLayer board={chess.board()} {flipped} />
 	</div>
 </div>
 

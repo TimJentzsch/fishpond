@@ -1,20 +1,18 @@
 <script lang="ts">
-	import type { Piece } from 'chess.js';
+	import { WHITE, type Piece } from 'chess.js';
 
 	export let piece: Piece;
+
+	$: symbol = piece.color === WHITE ? piece.type.toUpperCase() : piece.type;
 </script>
 
-<div class="piece-container">
-	<div class="piece">
-		{piece.type}
-	</div>
+<div class="piece">
+	{symbol}
 </div>
 
 <style>
-	.piece-container {
-		display: flex;
-		flex-grow: 1;
-		justify-content: center;
-		align-items: center;
+	.piece {
+		font-size: 2em;
+		font-weight: bold;
 	}
 </style>

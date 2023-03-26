@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getSquareColor, getSquareMargins, squareIndexes } from '$lib/board';
+	import { getSquareColor, getSquareIndexMargins, squareIndexes } from '$lib/board';
 
 	export let flipped: boolean = false;
 
@@ -11,7 +11,7 @@
 		{#each indexes as file}
 			<div
 				class="square {getSquareColor(rank, file)}"
-				style={getSquareMargins(rank, file, flipped)}
+				style={getSquareIndexMargins(rank, file, flipped)}
 			/>
 		{/each}
 	{/each}

@@ -1,7 +1,13 @@
-import type { Color } from 'chess.js';
-
+import type { Color, PieceSymbol, Square } from 'chess.js';
 export type Rank = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
 export type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
+
+export type PieceInfo = {
+	square: Square;
+	type: PieceSymbol;
+	color: Color;
+};
+export type Board = (PieceInfo | null)[][];
 
 export function squareIndexes(reversed = false): number[] {
 	const indexes = [0, 1, 2, 3, 4, 5, 6, 7];
@@ -63,11 +69,26 @@ export function indexToFile(index: number): File {
 	}
 }
 
-export function getSquareMargins(rank: number, file: number, flipped: boolean): string {
+export function getSquareIndexMargins(rank: number, file: number, flipped: boolean): string {
 	const perIndex = 100 / 8;
 
 	const left = file * perIndex;
 	const top = flipped ? rank * perIndex : 100 - perIndex - rank * perIndex;
 
 	return `top: ${top}%; left: ${left}%`;
+}
+
+export function squareToIndexes(square: Square): { file: number; rank: number } {
+	const file = square.charCodeAt(0) - 'a'.charCodeAt(0);
+	const rank = square.charCodeAt(1) - '1'.charCodeAt(0);
+
+	return {
+		file,
+		rank
+	};
+}
+
+export function getSquareMargins(square: Square, flipped = false): string {
+	const indexes = squareToIndexes(square);
+	return getSquareIndexMargins(indexes.rank, indexes.file, flipped);
 }

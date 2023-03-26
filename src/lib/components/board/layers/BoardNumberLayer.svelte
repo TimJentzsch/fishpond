@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {
 		getSquareColor,
-		getSquareMargins,
+		getSquareIndexMargins,
 		indexToFile,
 		indexToRank,
 		squareIndexes
@@ -17,7 +17,7 @@
 		<div
 			class="square rank {getSquareColor(rank, 7)}"
 			class:flipped
-			style={getSquareMargins(rank, 7, flipped)}
+			style={getSquareIndexMargins(rank, 7, flipped)}
 		>
 			<div class="square-number">{indexToRank(rank)}</div>
 		</div>
@@ -26,7 +26,7 @@
 		<div
 			class="square file {getSquareColor(0, file)}"
 			class:flipped
-			style={getSquareMargins(0, file, false)}
+			style={getSquareIndexMargins(0, file, false)}
 		>
 			<div class="square-number">{indexToFile(file)}</div>
 		</div>
