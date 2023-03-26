@@ -1,6 +1,6 @@
 <script lang="ts">
-	import BoardBackgroundView from './BoardBackgroundView.svelte';
-	import BoardNumberView from './BoardNumberView.svelte';
+	import BoardBackgroundView from './layers/BoardSquareLayer.svelte';
+	import BoardNumberView from './layers/BoardNumberLayer.svelte';
 
 	export let flipped: boolean = false;
 </script>

@@ -1,5 +1,5 @@
 <script>
-	import BoardView from '../lib/components/BoardView.svelte';
+	import BoardView from '../lib/components/board/BoardView.svelte';
 
 	let flipped = true;
 </script>
