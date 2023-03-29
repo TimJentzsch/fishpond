@@ -1,34 +1,34 @@
 <script lang="ts">
 	import {
 		getSquareColor,
-		getSquareIndexMargins,
-		indexToFile,
-		indexToRank,
-		squareIndexes
+		getSquarePosMargins,
+		filePosToStr,
+		rankPosToStr,
+		getAxisPositions
 	} from '$lib/board';
 
-	export let flipped: boolean = false;
+	export let isFlipped: boolean = false;
 
-	const indexes = squareIndexes();
+	const axisPositions = getAxisPositions();
 </script>
 
 <div class="board-number-container">
-	{#each indexes as rank (rank)}
+	{#each axisPositions as rank (rank)}
 		<div
-			class="square rank {getSquareColor(rank, 7)}"
-			class:flipped
-			style={getSquareIndexMargins(rank, 7, flipped)}
+			class="square rank {getSquareColor({ rank, file: 7 })}"
+			class:isFlipped
+			style={getSquarePosMargins({ rank, file: 7 }, isFlipped)}
 		>
-			<div class="square-number">{indexToRank(rank)}</div>
+			<div class="square-number">{rankPosToStr(rank)}</div>
 		</div>
 	{/each}
-	{#each indexes as file (file)}
+	{#each axisPositions as file (file)}
 		<div
-			class="square file {getSquareColor(0, file)}"
-			class:flipped
-			style={getSquareIndexMargins(0, file, false)}
+			class="square file {getSquareColor({ rank: 0, file })}"
+			class:isFlipped
+			style={getSquarePosMargins({ rank: 0, file }, false)}
 		>
-			<div class="square-number">{indexToFile(file)}</div>
+			<div class="square-number">{filePosToStr(file)}</div>
 		</div>
 	{/each}
 </div>

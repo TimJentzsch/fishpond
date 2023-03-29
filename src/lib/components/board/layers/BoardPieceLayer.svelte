@@ -3,14 +3,14 @@
 	import PieceView from '../PieceView.svelte';
 
 	export let board: Board;
-	export let flipped: boolean = false;
+	export let isFlipped: boolean = false;
 </script>
 
 <div class="piece-layer">
 	{#each board as rank}
 		{#each rank as pieceInfo}
 			{#if pieceInfo !== null}
-				<div class="piece-container" style={getSquareMargins(pieceInfo.square, flipped)}>
+				<div class="piece-container" style={getSquareMargins(pieceInfo.square, isFlipped)}>
 					<PieceView piece={{ color: pieceInfo.color, type: pieceInfo.type }} />
 				</div>
 			{/if}

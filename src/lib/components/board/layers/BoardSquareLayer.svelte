@@ -1,19 +1,22 @@
 <script lang="ts">
-	import { getSquareColor, getSquareIndexMargins, squareIndexes } from '$lib/board';
+	import {
+		getSquareColor,
+		getSquarePosMargins,
+		getAxisPositions,
+		getBoardPositions
+	} from '$lib/board';
 
-	export let flipped: boolean = false;
+	export let isFlipped: boolean = false;
 
-	const indexes = squareIndexes();
+	const boardPositions = getBoardPositions();
 </script>
 
 <div class="boardBackground">
-	{#each indexes as rank}
-		{#each indexes as file}
-			<div
-				class="square {getSquareColor(rank, file)}"
-				style={getSquareIndexMargins(rank, file, flipped)}
-			/>
-		{/each}
+	{#each boardPositions as squarePos}
+		<div
+			class="square {getSquareColor(squarePos)}"
+			style={getSquarePosMargins(squarePos, isFlipped)}
+		/>
 	{/each}
 </div>
 

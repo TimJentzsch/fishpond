@@ -5,18 +5,18 @@
 	import BoardPieceLayer from './layers/BoardPieceLayer.svelte';
 
 	export let chess: Chess;
-	export let flipped: boolean = false;
+	export let isFlipped: boolean = false;
 </script>
 
 <div class="board">
 	<div class="board-layer">
-		<BoardBackgroundLayer {flipped} />
+		<BoardBackgroundLayer {isFlipped} />
 	</div>
 	<div class="board-layer">
-		<BoardNumberLayer {flipped} />
+		<BoardNumberLayer {isFlipped} />
 	</div>
 	<div class="board-layer">
-		<BoardPieceLayer board={chess.board()} {flipped} />
+		<BoardPieceLayer board={chess.board()} {isFlipped} />
 	</div>
 </div>
 

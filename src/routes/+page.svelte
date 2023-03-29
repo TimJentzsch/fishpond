@@ -9,7 +9,7 @@
 <h1>Fishpond</h1>
 
 <div class="board-container">
-	<BoardView {chess} {flipped} />
+	<BoardView {chess} isFlipped={flipped} />
 	<label>
 		<input type="checkbox" bind:checked={flipped} />
 		Flip Board
