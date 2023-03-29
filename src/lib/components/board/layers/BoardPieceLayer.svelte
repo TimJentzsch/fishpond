@@ -33,6 +33,7 @@
 					{pieceInfo}
 					{isFlipped}
 					isSelected={selectedPieceInfo?.square === pieceInfo.square}
+					moves={chess.moves({ verbose: true, ...pieceInfo })}
 					on:click={onPieceSquareClick}
 				/>
 			{/if}

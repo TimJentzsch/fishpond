@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {
-		getSquareColor,
+		getSquarePosColor,
 		getSquarePosMargins,
 		filePosToStr,
 		rankPosToStr,
@@ -15,7 +15,7 @@
 <div class="board-number-container">
 	{#each axisPositions as rank (rank)}
 		<div
-			class="square rank {getSquareColor({ rank, file: 7 })}"
+			class="square rank {getSquarePosColor({ rank, file: 7 })}"
 			class:isFlipped
 			style={getSquarePosMargins({ rank, file: 7 }, isFlipped)}
 		>
@@ -24,7 +24,7 @@
 	{/each}
 	{#each axisPositions as file (file)}
 		<div
-			class="square file {getSquareColor({ rank: 0, file })}"
+			class="square file {getSquarePosColor({ rank: 0, file })}"
 			class:isFlipped
 			style={getSquarePosMargins({ rank: 0, file }, false)}
 		>
@@ -48,7 +48,8 @@
 		width: calc(100% / 8);
 		height: calc(100% / 8);
 
-		transition: top var(--flip-transition-duration), color var(--flip-transition-duration);
+		transition: var(--square-pos-transition);
+		transition: color var(--flip-transition-duration);
 	}
 
 	.square.rank {
@@ -60,12 +61,12 @@
 	}
 
 	.square.w,
-	.flipped.square.b.file {
+	.isFlipped.square.b.file {
 		color: var(--square-black);
 	}
 
 	.square.b,
-	.flipped.square.w.file {
+	.isFlipped.square.w.file {
 		color: var(--square-white);
 	}
 

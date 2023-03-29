@@ -47,7 +47,13 @@ export function getBoardPositions(): SquarePos[] {
 }
 
 /** Determine the color of a square at the given position. */
-export function getSquareColor(squarePos: SquarePos): Color {
+export function getSquarePosColor(squarePos: SquarePos): Color {
+	return (squarePos.rank + squarePos.file) % 2 == 0 ? BLACK : WHITE;
+}
+
+/** Determine the color of a square. */
+export function getSquareColor(square: Square): Color {
+	const squarePos = squareToSquarePos(square);
 	return (squarePos.rank + squarePos.file) % 2 == 0 ? BLACK : WHITE;
 }
 
@@ -141,4 +147,9 @@ export function squareToSquarePos(square: Square): SquarePos {
 export function getSquareMargins(square: Square, isFlipped = false): string {
 	const squarePos = squareToSquarePos(square);
 	return getSquarePosMargins(squarePos, isFlipped);
+}
+
+/** Gets the target square of a move string. */
+export function getTargetSquare(move: string): Square {
+	return move.slice(2, 4) as Square;
 }

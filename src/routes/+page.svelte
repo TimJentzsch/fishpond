@@ -3,7 +3,7 @@
 	import BoardView from '../lib/components/board/BoardView.svelte';
 
 	let chess = new Chess();
-	let flipped = true;
+	let flipped = false;
 </script>
 
 <h1>Fishpond</h1>

@@ -1,11 +1,19 @@
 <script lang="ts">
-	import { getSquareMargins, type PieceInfo } from '$lib/board';
+	import {
+		getSquarePosColor,
+		getSquareMargins,
+		getTargetSquare,
+		type PieceInfo,
+		getSquareColor
+	} from '$lib/board';
+	import type { Move, Square } from 'chess.js';
 	import { createEventDispatcher } from 'svelte';
 	import PieceView from './PieceView.svelte';
 
 	const dispatch = createEventDispatcher();
 
 	export let pieceInfo: PieceInfo;
+	export let moves: Move[] = [];
 	export let isFlipped: boolean = false;
 	export let isSelected: boolean = false;
 
@@ -17,7 +25,13 @@
 	}
 </script>
 
-<button class="piece-square" class:selected={isSelected} style={margins} on:click={onClick}>
+<button
+	class="piece-square {getSquareColor(pieceInfo.square)}"
+	class:selected={isSelected}
+	style={margins}
+	disabled={moves.length === 0}
+	on:click={onClick}
+>
 	<PieceView {piece} />
 </button>
 
@@ -36,7 +50,7 @@
 		background: transparent;
 		cursor: pointer;
 
-		transition: top var(--flip-transition-duration), left var(--flip-transition-duration);
+		transition: var(--square-pos-transition);
 	}
 
 	.piece-square:disabled {
@@ -44,7 +58,11 @@
 		cursor: inherit;
 	}
 
-	.piece-square.selected {
-		background-color: green;
+	.piece-square.w.selected {
+		background-color: var(--square-white-selected);
+	}
+
+	.piece-square.b.selected {
+		background-color: var(--square-black-selected);
 	}
 </style>

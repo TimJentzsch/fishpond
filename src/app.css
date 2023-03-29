@@ -2,7 +2,11 @@
 	--square-white: #ecd2c1;
 	--square-black: #89502a;
 
+	--square-white-selected: #caecc1;
+	--square-black-selected: #3e892a;
+
 	--flip-transition-duration: 0.25s;
+	--square-pos-transition: top var(--flip-transition-duration), left var(--flip-transition-duration);
 }
 
 body {

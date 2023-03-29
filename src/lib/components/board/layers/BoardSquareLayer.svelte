@@ -1,6 +1,6 @@
 <script lang="ts">
 	import {
-		getSquareColor,
+		getSquarePosColor,
 		getSquarePosMargins,
 		getAxisPositions,
 		getBoardPositions
@@ -14,7 +14,7 @@
 <div class="boardBackground">
 	{#each boardPositions as squarePos}
 		<div
-			class="square {getSquareColor(squarePos)}"
+			class="square {getSquarePosColor(squarePos)}"
 			style={getSquarePosMargins(squarePos, isFlipped)}
 		/>
 	{/each}
@@ -34,7 +34,7 @@
 		height: calc(100% / 8);
 		position: absolute;
 
-		transition: top var(--flip-transition-duration);
+		transition: var(--square-pos-transition);
 	}
 
 	.square.w {
