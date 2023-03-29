@@ -1,18 +1,40 @@
 <script lang="ts">
-	import { getSquareMargins, type Board } from '$lib/board';
-	import PieceView from '../PieceView.svelte';
+	import type { PieceInfo } from '$lib/board';
+	import type { Chess } from 'chess.js';
+	import PieceSquareView from '../PieceSquareView.svelte';
 
-	export let board: Board;
+	export let chess: Chess;
 	export let isFlipped: boolean = false;
+
+	$: board = chess.board();
+
+	let selectedPieceInfo: PieceInfo | null = null;
+
+	function onPieceSquareClick(event: CustomEvent) {
+		const pieceInfo: PieceInfo = event.detail.pieceInfo;
+
+		if (
+			pieceInfo.square === selectedPieceInfo?.square &&
+			pieceInfo.type === selectedPieceInfo?.type &&
+			pieceInfo.color === selectedPieceInfo?.color
+		) {
+			selectedPieceInfo = null;
+		} else {
+			selectedPieceInfo = pieceInfo;
+		}
+	}
 </script>
 
 <div class="piece-layer">
 	{#each board as rank}
 		{#each rank as pieceInfo}
 			{#if pieceInfo !== null}
-				<div class="piece-container" style={getSquareMargins(pieceInfo.square, isFlipped)}>
-					<PieceView piece={{ color: pieceInfo.color, type: pieceInfo.type }} />
-				</div>
+				<PieceSquareView
+					{pieceInfo}
+					{isFlipped}
+					isSelected={selectedPieceInfo?.square === pieceInfo.square}
+					on:click={onPieceSquareClick}
+				/>
 			{/if}
 		{/each}
 	{/each}
@@ -24,18 +46,5 @@
 		height: 100%;
 
 		position: relative;
-	}
-
-	.piece-container {
-		width: calc(100% / 8);
-		height: calc(100% / 8);
-
-		position: absolute;
-
-		display: flex;
-		justify-content: center;
-		align-items: center;
-
-		transition: top var(--flip-transition-duration), left var(--flip-transition-duration);
 	}
 </style>

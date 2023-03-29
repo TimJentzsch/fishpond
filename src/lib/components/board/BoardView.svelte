@@ -16,7 +16,7 @@
 		<BoardNumberLayer {isFlipped} />
 	</div>
 	<div class="board-layer">
-		<BoardPieceLayer board={chess.board()} {isFlipped} />
+		<BoardPieceLayer {chess} {isFlipped} />
 	</div>
 </div>
 
