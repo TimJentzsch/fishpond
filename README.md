@@ -12,6 +12,7 @@ This app is built with [Tauri](https://tauri.app/), using [Rust](https://www.rus
 
 - [Nodejs](https://nodejs.org/en/download) with npm
 - [Rust](https://www.rust-lang.org/)
+- [Tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites)
 
 ### Installation
 
