@@ -45,8 +45,8 @@
 		position: absolute;
 		display: flex;
 		user-select: none;
-		width: calc(100% / 8);
-		height: calc(100% / 8);
+		width: var(--square-size);
+		height: var(--square-size);
 
 		transition: var(--square-pos-transition);
 		transition: color var(--flip-transition-duration);
@@ -62,12 +62,12 @@
 
 	.square.w,
 	.isFlipped.square.b.file {
-		color: var(--square-black);
+		color: var(--square-black-color);
 	}
 
 	.square.b,
 	.isFlipped.square.w.file {
-		color: var(--square-white);
+		color: var(--square-white-color);
 	}
 
 	.square-number {

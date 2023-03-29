@@ -1,12 +1,18 @@
 :root {
-	--square-white: #ecd2c1;
-	--square-black: #89502a;
+	--square-white-color: #ecd2c1;
+	--square-black-color: #89502a;
 
-	--square-white-selected: #caecc1;
-	--square-black-selected: #3e892a;
+	--square-white-selected-color: #caecc1;
+	--square-black-selected-color: #3e892a;
+
+	--move-indicator-color: rgba(0, 92, 0, 0.7);
 
 	--flip-transition-duration: 0.25s;
 	--square-pos-transition: top var(--flip-transition-duration), left var(--flip-transition-duration);
+
+	--square-size: calc(100% / 8);
+
+	--move-indicator-size: 30%;
 }
 
 body {

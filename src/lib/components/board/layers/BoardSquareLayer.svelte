@@ -30,18 +30,18 @@
 		height: 100%;
 	}
 	.square {
-		width: calc(100% / 8);
-		height: calc(100% / 8);
+		width: var(--square-size);
+		height: var(--square-size);
 		position: absolute;
 
 		transition: var(--square-pos-transition);
 	}
 
 	.square.w {
-		background-color: var(--square-white);
+		background-color: var(--square-white-color);
 	}
 
 	.square.b {
-		background-color: var(--square-black);
+		background-color: var(--square-black-color);
 	}
 </style>

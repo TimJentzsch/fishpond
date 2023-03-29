@@ -1,13 +1,8 @@
 <script lang="ts">
-	import {
-		getSquarePosColor,
-		getSquareMargins,
-		getTargetSquare,
-		type PieceInfo,
-		getSquareColor
-	} from '$lib/board';
-	import type { Move, Square } from 'chess.js';
+	import { getSquareMargins, type PieceInfo, getSquareColor } from '$lib/board';
+	import type { Move } from 'chess.js';
 	import { createEventDispatcher } from 'svelte';
+	import MoveTarget from './MoveTarget.svelte';
 	import PieceView from './PieceView.svelte';
 
 	const dispatch = createEventDispatcher();
@@ -35,10 +30,16 @@
 	<PieceView {piece} />
 </button>
 
+{#if isSelected}
+	{#each moves as move}
+		<MoveTarget {move} />
+	{/each}
+{/if}
+
 <style>
 	.piece-square {
-		width: calc(100% / 8);
-		height: calc(100% / 8);
+		width: var(--square-size);
+		height: var(--square-size);
 
 		position: absolute;
 
@@ -59,10 +60,10 @@
 	}
 
 	.piece-square.w.selected {
-		background-color: var(--square-white-selected);
+		background-color: var(--square-white-selected-color);
 	}
 
 	.piece-square.b.selected {
-		background-color: var(--square-black-selected);
+		background-color: var(--square-black-selected-color);
 	}
 </style>
