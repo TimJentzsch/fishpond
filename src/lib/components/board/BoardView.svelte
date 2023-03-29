@@ -1,11 +1,16 @@
 <script lang="ts">
-	import type { Chess } from 'chess.js';
+	import type { Chess, Move } from 'chess.js';
 	import BoardBackgroundLayer from './layers/BoardSquareLayer.svelte';
 	import BoardNumberLayer from './layers/BoardNumberLayer.svelte';
 	import BoardPieceLayer from './layers/BoardPieceLayer.svelte';
 
 	export let chess: Chess;
 	export let isFlipped: boolean = false;
+
+	function onMove(event: CustomEvent<{ move: Move }>) {
+		chess.move(event.detail.move);
+		chess = chess;
+	}
 </script>
 
 <div class="board">
@@ -16,7 +21,7 @@
 		<BoardNumberLayer {isFlipped} />
 	</div>
 	<div class="board-layer">
-		<BoardPieceLayer {chess} {isFlipped} />
+		<BoardPieceLayer {chess} {isFlipped} on:move={onMove} />
 	</div>
 </div>
 

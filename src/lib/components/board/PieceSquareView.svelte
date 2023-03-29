@@ -32,7 +32,7 @@
 
 {#if isSelected}
 	{#each moves as move}
-		<MoveTarget {move} />
+		<MoveTarget {move} on:move />
 	{/each}
 {/if}
 
