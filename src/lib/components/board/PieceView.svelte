@@ -2,11 +2,12 @@
 	import { WHITE, type Piece } from 'chess.js';
 
 	export let piece: Piece;
+	export let isVisible: boolean = true;
 
 	$: symbol = piece.color === WHITE ? piece.type.toUpperCase() : piece.type;
 </script>
 
-<div class="piece">
+<div class="piece" hidden={!isVisible}>
 	{symbol}
 </div>
 

@@ -12,6 +12,8 @@
 	export let isFlipped: boolean = false;
 	export let isSelected: boolean = false;
 
+	let isDragging = false;
+
 	$: margins = getSquareMargins(pieceInfo.square, isFlipped);
 	$: piece = { color: pieceInfo.color, type: pieceInfo.type };
 	$: disabled = moves.length === 0;
@@ -22,6 +24,14 @@
 
 	function onDragStart() {
 		dispatch('pieceDragStart', { pieceInfo });
+	}
+
+	function onDrag() {
+		isDragging = true;
+	}
+
+	function onDragEnd() {
+		isDragging = false;
 	}
 </script>
 
@@ -37,9 +47,11 @@
 	draggable={!disabled}
 	on:click={onClick}
 	on:dragstart={onDragStart}
+	on:dragend={onDragEnd}
+	on:drag={onDrag}
 >
 	<div class="piece-square-inner">
-		<PieceView {piece} />
+		<PieceView {piece} isVisible={!isDragging} />
 	</div>
 </button>
 
