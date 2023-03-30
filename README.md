@@ -28,4 +28,4 @@ npm run tauri dev
 
 ## License
 
-As usual in the chess ecosystem, this code is distributed under the terms of the [GNU AGPL](LICENSE).
+Fishpond is licensed under the GNU Affero General Public License 3 or any later version at your choice. See [copying](COPYING.md) for details.
