@@ -3,18 +3,18 @@
 
 	export let piece: Piece;
 	export let isVisible: boolean = true;
+	export let theme: string = 'cburnett';
 
 	$: symbol = piece.color === WHITE ? piece.type.toUpperCase() : piece.type;
+	$: src = `/piece/${theme}/${piece.color}${piece.type.toUpperCase()}.svg`;
 </script>
 
-<div class="piece" hidden={!isVisible}>
-	{symbol}
-</div>
+<img class="piece" {src} alt={symbol} hidden={!isVisible} />
 
 <style>
 	.piece {
-		font-size: 2em;
-		font-weight: bold;
+		width: 100%;
+		height: 100%;
 		user-select: none;
 	}
 </style>
