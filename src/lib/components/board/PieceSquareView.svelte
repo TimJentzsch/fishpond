@@ -14,20 +14,33 @@
 
 	$: margins = getSquareMargins(pieceInfo.square, isFlipped);
 	$: piece = { color: pieceInfo.color, type: pieceInfo.type };
+	$: disabled = moves.length === 0;
 
 	function onClick() {
-		dispatch('click', { pieceInfo });
+		dispatch('pieceClick', { pieceInfo });
+	}
+
+	function onDragStart() {
+		dispatch('pieceDragStart', { pieceInfo });
 	}
 </script>
 
+{#if isSelected}
+	<div class="piece-selected {getSquareColor(pieceInfo.square)}" style={margins} />
+{/if}
+
 <button
-	class="piece-square {getSquareColor(pieceInfo.square)}"
+	class="piece-square"
 	class:selected={isSelected}
 	style={margins}
-	disabled={moves.length === 0}
+	{disabled}
+	draggable={!disabled}
 	on:click={onClick}
+	on:dragstart={onDragStart}
 >
-	<PieceView {piece} />
+	<div class="piece-square-inner">
+		<PieceView {piece} />
+	</div>
 </button>
 
 {#if isSelected}
@@ -43,12 +56,11 @@
 
 		position: absolute;
 
-		display: flex;
-		justify-content: center;
-		align-items: center;
-
 		border: none;
 		background: transparent;
+		padding: 0;
+		margin: 0;
+
 		cursor: pointer;
 
 		transition: var(--square-pos-transition);
@@ -59,11 +71,27 @@
 		cursor: inherit;
 	}
 
-	.piece-square.w.selected {
+	.piece-square-inner {
+		height: 100%;
+		width: 100%;
+
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.piece-selected {
+		width: var(--square-size);
+		height: var(--square-size);
+
+		position: absolute;
+	}
+
+	.piece-selected.w {
 		background-color: var(--square-white-selected-color);
 	}
 
-	.piece-square.b.selected {
+	.piece-selected.b {
 		background-color: var(--square-black-selected-color);
 	}
 </style>

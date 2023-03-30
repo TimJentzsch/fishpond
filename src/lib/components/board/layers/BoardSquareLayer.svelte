@@ -1,10 +1,5 @@
 <script lang="ts">
-	import {
-		getSquarePosColor,
-		getSquarePosMargins,
-		getAxisPositions,
-		getBoardPositions
-	} from '$lib/board';
+	import { getSquarePosColor, getSquarePosMargins, getBoardPositions } from '$lib/board';
 
 	export let isFlipped: boolean = false;
 

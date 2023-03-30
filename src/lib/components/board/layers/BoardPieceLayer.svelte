@@ -23,6 +23,11 @@
 			selectedPieceInfo = pieceInfo;
 		}
 	}
+
+	function onPieceDragStart(event: CustomEvent) {
+		const pieceInfo: PieceInfo = event.detail.pieceInfo;
+		selectedPieceInfo = pieceInfo;
+	}
 </script>
 
 <div class="piece-layer">
@@ -34,7 +39,8 @@
 					{isFlipped}
 					isSelected={selectedPieceInfo?.square === pieceInfo.square}
 					moves={chess.moves({ verbose: true, ...pieceInfo })}
-					on:click={onPieceSquareClick}
+					on:pieceClick={onPieceSquareClick}
+					on:pieceDragStart={onPieceDragStart}
 					on:move
 				/>
 			{/if}
