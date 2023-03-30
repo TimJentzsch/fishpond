@@ -57,7 +57,7 @@
 
 {#if isSelected}
 	{#each moves as move}
-		<MoveTarget {move} on:move />
+		<MoveTarget {move} {isFlipped} on:move />
 	{/each}
 {/if}
 
