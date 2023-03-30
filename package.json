@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"author": "Tim Jentzsch",
 	"repository": "https://github.com/TimJentzsch/fishpond",
-	"license": "GPL-3.0",
+	"license": "AGPL-3.0-or-later",
 	"private": true,
 	"scripts": {
 		"tauri": "tauri",

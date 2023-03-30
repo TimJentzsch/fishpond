@@ -28,4 +28,4 @@ npm run tauri dev
 
 ## License
 
-As usual in the chess ecosystem, this code is distributed under the terms of the [GPL-3.0 license](LICENSE).
+As usual in the chess ecosystem, this code is distributed under the terms of the [GNU AGPL](LICENSE).
