@@ -16,6 +16,7 @@ If you modify this Program, or any covered work, by linking or combining it with
 
 ## Exceptions (free)
 
-| Files                     | Author(s)                                                         | License                                            |
-| ------------------------- | ----------------------------------------------------------------- | -------------------------------------------------- |
-| `static/piece/cburnett/*` | [Colin M.L. Burnett](https://en.wikipedia.org/wiki/User:Cburnett) | [GPLv2+](https://www.gnu.org/licenses/gpl-2.0.txt) |
+| Files                     | Author(s)                                                         | License                                                               |
+| ------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `static/piece/cburnett/*` | [Colin M.L. Burnett](https://en.wikipedia.org/wiki/User:Cburnett) | [GPLv2+](https://www.gnu.org/licenses/gpl-2.0.txt)                    |
+| `static/piece/gioco/*`    | sadsnake1                                                         | [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) |

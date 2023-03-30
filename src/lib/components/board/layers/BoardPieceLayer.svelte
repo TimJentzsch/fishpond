@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { PieceInfo } from '$lib/board';
+	import type { PieceSet } from '$lib/piece';
 	import type { Chess } from 'chess.js';
 	import PieceSquareView from '../PieceSquareView.svelte';
 
 	export let chess: Chess;
 	export let isFlipped: boolean = false;
+	export let pieceSet: PieceSet;
 
 	$: board = chess.board();
 
@@ -37,6 +39,7 @@
 				<PieceSquareView
 					{pieceInfo}
 					{isFlipped}
+					{pieceSet}
 					isSelected={selectedPieceInfo?.square === pieceInfo.square}
 					moves={chess.moves({ verbose: true, ...pieceInfo })}
 					on:pieceClick={onPieceSquareClick}

@@ -3,9 +3,11 @@
 	import BoardBackgroundLayer from './layers/BoardSquareLayer.svelte';
 	import BoardNumberLayer from './layers/BoardNumberLayer.svelte';
 	import BoardPieceLayer from './layers/BoardPieceLayer.svelte';
+	import type { PieceSet } from '$lib/piece';
 
 	export let chess: Chess;
 	export let isFlipped: boolean = false;
+	export let pieceSet: PieceSet;
 
 	function onMove(event: CustomEvent<{ move: Move }>) {
 		chess.move(event.detail.move);
@@ -21,7 +23,7 @@
 		<BoardNumberLayer {isFlipped} />
 	</div>
 	<div class="board-layer">
-		<BoardPieceLayer {chess} {isFlipped} on:move={onMove} />
+		<BoardPieceLayer {chess} {isFlipped} {pieceSet} on:move={onMove} />
 	</div>
 </div>
 

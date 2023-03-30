@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getSquareMargins, type PieceInfo, getSquareColor } from '$lib/board';
+	import type { PieceSet } from '$lib/piece';
 	import type { Move } from 'chess.js';
 	import { createEventDispatcher } from 'svelte';
 	import MoveTarget from './MoveTarget.svelte';
@@ -11,6 +12,7 @@
 	export let moves: Move[] = [];
 	export let isFlipped: boolean = false;
 	export let isSelected: boolean = false;
+	export let pieceSet: PieceSet;
 
 	let isDragging = false;
 
@@ -51,7 +53,7 @@
 	on:drag={onDrag}
 >
 	<div class="piece-square-inner">
-		<PieceView {piece} isVisible={!isDragging} />
+		<PieceView {piece} {pieceSet} isVisible={!isDragging} />
 	</div>
 </button>
 
