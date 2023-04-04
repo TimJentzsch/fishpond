@@ -2,16 +2,18 @@
 	import { PieceSet } from '$lib/piece';
 	import { Chess } from 'chess.js';
 	import BoardView from '../lib/components/board/BoardView.svelte';
+	import { SoundSet } from '$lib/sound';
 
 	let chess = new Chess();
 	let flipped = false;
 	let pieceSet: PieceSet = PieceSet.cburnett;
+	let soundSet: SoundSet = SoundSet.fishpond;
 </script>
 
 <h1>Fishpond</h1>
 
 <div class="board-container">
-	<BoardView {chess} isFlipped={flipped} {pieceSet} />
+	<BoardView {chess} isFlipped={flipped} {pieceSet} {soundSet} />
 
 	<form>
 		<label>

@@ -4,14 +4,31 @@
 	import BoardNumberLayer from './layers/BoardNumberLayer.svelte';
 	import BoardPieceLayer from './layers/BoardPieceLayer.svelte';
 	import type { PieceSet } from '$lib/piece';
+	import type { SoundSet } from '$lib/sound';
 
 	export let chess: Chess;
 	export let isFlipped: boolean = false;
 	export let pieceSet: PieceSet;
+	export let soundSet: SoundSet;
+
+	$: moveSound = new Audio(`/sound/${soundSet}/Move.ogg`);
+	$: captureSound = new Audio(`/sound/${soundSet}/Capture.ogg`);
+
+	function playMoveSound(move: Move) {
+		if (move.captured !== undefined) {
+			captureSound.play();
+		} else {
+			moveSound.play();
+		}
+	}
 
 	function onMove(event: CustomEvent<{ move: Move }>) {
-		chess.move(event.detail.move);
+		const move = event.detail.move;
+
+		chess.move(move);
 		chess = chess;
+
+		playMoveSound(move);
 	}
 </script>
 
