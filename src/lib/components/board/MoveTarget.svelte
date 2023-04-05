@@ -48,7 +48,7 @@
 	on:dragenter={onDragEnter}
 	on:dragleave={onDragLeave}
 >
-	<div class="move-indicator" class:isDraggedOver />
+	<div class="move-indicator" class:capture={move.captured !== undefined} class:isDraggedOver />
 </button>
 
 <style>
@@ -73,6 +73,8 @@
 	}
 
 	.move-indicator {
+		box-sizing: border-box;
+
 		width: var(--move-indicator-size);
 		height: var(--move-indicator-size);
 		border-radius: 50%;
@@ -88,5 +90,18 @@
 		width: 100%;
 		height: 100%;
 		border-radius: 0;
+	}
+
+	.move-indicator.capture {
+		border-radius: 0;
+		width: 100%;
+		height: 100%;
+
+		background-color: inherit;
+		background: radial-gradient(transparent 0%, transparent 77%, var(--move-indicator-color) 78%);
+	}
+
+	.move-target:hover > .move-indicator.capture {
+		background: var(--move-indicator-color);
 	}
 </style>
