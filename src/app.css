@@ -5,6 +5,9 @@
 	--square-white-selected-color: #caecc1;
 	--square-black-selected-color: #3e892a;
 
+	--square-white-last-move-color: #caecc1;
+	--square-black-last-move-color: #3e892a;
+
 	--move-indicator-color: rgba(0, 92, 0, 0.7);
 
 	--flip-transition-duration: 0.25s;

@@ -5,6 +5,7 @@
 	import BoardPieceLayer from './layers/BoardPieceLayer.svelte';
 	import type { PieceSet } from '$lib/piece';
 	import type { SoundSet } from '$lib/sound';
+	import BoardIndicatorLayer from './layers/BoardIndicatorLayer.svelte';
 
 	export let chess: Chess;
 	export let isFlipped: boolean = false;
@@ -35,6 +36,9 @@
 <div class="board">
 	<div class="board-layer">
 		<BoardBackgroundLayer {isFlipped} />
+	</div>
+	<div class="board-layer">
+		<BoardIndicatorLayer {chess} {isFlipped} />
 	</div>
 	<div class="board-layer">
 		<BoardNumberLayer {isFlipped} />
