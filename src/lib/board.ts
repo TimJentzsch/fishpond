@@ -1,4 +1,4 @@
-import { BLACK, WHITE, type Color, type PieceSymbol, type Square } from 'chess.js';
+import { BLACK, WHITE, type Color, type PieceSymbol, type Square, Chess } from 'chess.js';
 
 export type Rank = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8';
 export type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
@@ -152,4 +152,16 @@ export function getSquareMargins(square: Square, isFlipped = false): string {
 /** Gets the target square of a move string. */
 export function getTargetSquare(move: string): Square {
 	return move.slice(2, 4) as Square;
+}
+
+export function* getBoardPieces(chess: Chess): Generator<PieceInfo, void, unknown> {
+	const board = chess.board();
+
+	for (const rank of board) {
+		for (const pieceInfo of rank) {
+			if (pieceInfo !== null) {
+				yield pieceInfo;
+			}
+		}
+	}
 }

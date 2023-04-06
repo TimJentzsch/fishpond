@@ -1,4 +1,5 @@
-import type { Chess, Square } from 'chess.js';
+import { KING, type Chess, type Square } from 'chess.js';
+import { getBoardPieces } from './board';
 
 /**
  * Get the two squares of the last move in an array.
@@ -15,4 +16,33 @@ export function getLastMoveSquares(chess: Chess): Square[] {
 
 	const lastMove = moveHistory[moveHistory.length - 1];
 	return [lastMove.from, lastMove.to];
+}
+
+export type CheckInfo = {
+	square: Square;
+	isMate: boolean;
+};
+
+export function getCheckInfo(chess: Chess): CheckInfo | undefined {
+	if (!chess.isCheck() && !chess.isCheckmate()) {
+		return undefined;
+	}
+
+	const isMate = chess.isCheckmate();
+
+	const boardPieces = [...getBoardPieces(chess)];
+	const turn = chess.turn();
+
+	const king = boardPieces.find((pieceInfo) => {
+		return pieceInfo !== null && pieceInfo.color === turn && pieceInfo.type === KING;
+	});
+
+	if (king === undefined) {
+		return undefined;
+	}
+
+	return {
+		square: king.square,
+		isMate
+	};
 }
