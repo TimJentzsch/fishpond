@@ -8,6 +8,9 @@
 	--square-white-last-move-color: #caecc1;
 	--square-black-last-move-color: #3e892a;
 
+	--square-white-check-color: red;
+	--square-black-check-color: rgb(202, 0, 0);
+
 	--move-indicator-color: rgba(0, 92, 0, 0.7);
 
 	--flip-transition-duration: 0.25s;
