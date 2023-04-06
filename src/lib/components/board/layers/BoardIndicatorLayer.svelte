@@ -1,23 +1,12 @@
 <script lang="ts">
 	import { getSquareColor, getSquareMargins } from '$lib/board';
-	import type { Chess, Square } from 'chess.js';
+	import { getLastMoveSquares } from '$lib/indicators';
+	import type { Chess } from 'chess.js';
 
 	export let chess: Chess;
 	export let isFlipped: boolean;
 
 	$: lastMoveSquares = getLastMoveSquares(chess);
-
-	function getLastMoveSquares(myChess: Chess): Square[] {
-		console.debug('Getting last move squares');
-		const moveHistory = myChess.history({ verbose: true });
-
-		if (moveHistory.length === 0) {
-			return [];
-		}
-
-		const lastMove = moveHistory[moveHistory.length - 1];
-		return [lastMove.from, lastMove.to];
-	}
 </script>
 
 <div class="indicator-layer">
