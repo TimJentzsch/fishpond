@@ -1,5 +1,7 @@
 # fishpond
 
+![License: AGPL-3.0](https://img.shields.io/github/license/TimJentzsch/fishpond)
+
 Fishpond is a chess GUI targeted at chess engine developers.
 
 ⚠️ **This project is very much work in progress and not really usable yet!** ⚠️
