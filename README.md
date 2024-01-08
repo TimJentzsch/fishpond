@@ -15,7 +15,7 @@ Hence, we're interested in providing functionality to debug a chess engine and t
 
 ## License
 
-Contrary to most Rust/Bevy projects, this project is licensed under **GNU Affero General Public License v3** or later.
+Contrary to most Rust/Bevy projects, this project is licensed under [**GNU Affero General Public License v3**](LICENSE-AGPL) or later.
 This is to align with other open source chess projects, like [Lichess](https://lichess.org/).
 
 On the other hand, we plan to release more generally usable parts of the project under MIT/Apache-2.0.
