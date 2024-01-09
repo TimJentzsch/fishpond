@@ -8,7 +8,7 @@ license = "AGPL-3.0-or-later"
 
 [dependencies]
 bevy = "0.12"
-bevy_local_commands = "0.3.0"
+bevy_local_commands = { path = "../../bevyengine/bevy_local_commands" }
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]
