@@ -8,7 +8,7 @@ license = "AGPL-3.0-or-later"
 
 [dependencies]
 bevy = "0.12"
-bevy_local_commands = { git = "https://github.com/edouardpoitras/bevy_local_commands", ref = "2240a39d8bd42a7ce610e19c269619fd6e7476df" }
+bevy_local_commands = "0.3.0"
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]

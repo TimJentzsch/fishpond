@@ -690,8 +690,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_local_commands"
-version = "0.2.4"
-source = "git+https://github.com/edouardpoitras/bevy_local_commands#50f701f7bad41e188820ed3a73d789ecf47290fc"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7c459523382cb9cfa11906a4e4c672b5d4f988a543742361d9ed6eb06b5f32f3"
 dependencies = [
  "bevy",
 ]
