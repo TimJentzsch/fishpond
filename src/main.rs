@@ -1,11 +1,17 @@
-use std::process::Command;
+use std::{process::Command, time::Duration};
 
-use bevy::prelude::*;
+use bevy::{app::ScheduleRunnerPlugin, prelude::*};
 use bevy_local_commands::{BevyLocalCommandsPlugin, LocalCommand, Process, ProcessOutput};
 
 fn main() {
     App::new()
-        .add_plugins((MinimalPlugins, BevyLocalCommandsPlugin))
+        .add_plugins((
+            MinimalPlugins.set(ScheduleRunnerPlugin::run_loop(Duration::from_secs_f64(
+                // Limit to 30 FPS
+                1.0 / 30.0,
+            ))),
+            BevyLocalCommandsPlugin,
+        ))
         .add_systems(Startup, start_stockfish)
         .add_systems(Update, (log_output, uci).chain())
         .run();
