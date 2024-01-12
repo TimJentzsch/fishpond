@@ -689,6 +689,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_local_commands"
+version = "0.4.0"
+dependencies = [
+ "bevy",
+]
+
+[[package]]
 name = "bevy_log"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1593,6 +1600,7 @@ name = "fishpond"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "bevy_local_commands",
 ]
 
 [[package]]
