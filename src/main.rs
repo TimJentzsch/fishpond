@@ -1,4 +1,4 @@
-use std::{process::Command, time::Duration};
+use std::time::Duration;
 
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
 use bevy_local_commands::{BevyLocalCommandsPlugin, LocalCommand, Process, ProcessOutput};
@@ -18,7 +18,7 @@ fn main() {
 }
 
 fn start_stockfish(mut commands: Commands) {
-    commands.spawn(LocalCommand::new(Command::new("stockfish")));
+    commands.spawn(LocalCommand::new("stockfish"));
 }
 
 fn log_output(mut output_event: EventReader<ProcessOutput>) {
