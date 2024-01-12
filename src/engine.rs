@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process, ProcessOutput};
 
-use crate::GameRef;
+use crate::{process_log::LogSet, GameRef};
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Component)]
 enum EngineState {
@@ -27,7 +27,8 @@ impl Plugin for EnginePlugin {
                 handle_start_engine,
                 handle_engine_startup,
                 handle_engine_uci_init,
-            ),
+            )
+                .after(LogSet),
         );
     }
 }
