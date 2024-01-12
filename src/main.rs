@@ -1,23 +1,16 @@
 use std::time::Duration;
 
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
-use bevy_local_commands::{
-    BevyLocalCommandsPlugin, LocalCommand, Process, ProcessError, ProcessOutput,
-};
+use bevy_local_commands::{BevyLocalCommandsPlugin, ProcessError, ProcessOutput};
+use engine::{EnginePlugin, StartEngine};
+
+mod engine;
 
 #[derive(Debug, Default, Component)]
 struct Game;
 
 #[derive(Debug, Component)]
 struct GameRef(Entity);
-
-#[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Component)]
-enum EngineState {
-    #[default]
-    Startup,
-    UciInit,
-    Ready,
-}
 
 fn main() {
     App::new()
@@ -27,51 +20,19 @@ fn main() {
                 1.0 / 30.0,
             ))),
             BevyLocalCommandsPlugin,
+            EnginePlugin,
         ))
         .add_systems(Startup, start_stockfish)
-        .add_systems(
-            Update,
-            (
-                log_output,
-                log_errors,
-                handle_engine_startup,
-                handle_engine_uci_init,
-            ),
-        )
+        .add_systems(Update, (log_output, log_errors))
         .run();
 }
 
-fn start_stockfish(mut commands: Commands) {
+fn start_stockfish(mut commands: Commands, mut start_engine_event: EventWriter<StartEngine>) {
     let game_id = commands.spawn(Game).id();
-    commands.spawn((
-        EngineState::default(),
-        GameRef(game_id),
-        LocalCommand::new("stockfish"),
-    ));
-}
-
-fn handle_engine_startup(mut state_query: Query<(&mut EngineState, &mut Process), Added<Process>>) {
-    for (mut state, mut process) in state_query.iter_mut() {
-        println!("Initializing UCI...");
-        process.println("uci").expect("Failed to send uci command");
-        *state = EngineState::UciInit;
-    }
-}
-
-fn handle_engine_uci_init(
-    mut output_event: EventReader<ProcessOutput>,
-    mut state_query: Query<&mut EngineState>,
-) {
-    for output in output_event.read() {
-        for line in &output.output {
-            if line.trim().starts_with("uciok") {
-                if let Ok(mut state) = state_query.get_mut(output.entity) {
-                    println!("Engine ready!");
-                    *state = EngineState::Ready;
-                }
-            }
-        }
-    }
+    start_engine_event.send(StartEngine {
+        game_id,
+        path: "stockfish".to_string(),
+    });
 }
 
 fn log_output(mut output_event: EventReader<ProcessOutput>) {
