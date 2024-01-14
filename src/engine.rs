@@ -17,6 +17,12 @@ pub struct StartEngine {
     pub path: String,
 }
 
+#[derive(Debug, Component, Event)]
+pub struct EngineInitialized {
+    pub engine_id: Entity,
+    pub game_ref: GameRef,
+}
+
 pub struct EnginePlugin;
 
 impl Plugin for EnginePlugin {
@@ -53,14 +59,19 @@ fn handle_engine_startup(mut state_query: Query<(&mut EngineState, &mut Process)
 
 fn handle_engine_uci_init(
     mut output_event: EventReader<ProcessOutput>,
-    mut state_query: Query<&mut EngineState>,
+    mut state_query: Query<(Entity, &mut EngineState, &GameRef)>,
+    mut engine_initialized_event: EventWriter<EngineInitialized>,
 ) {
     for output in output_event.read() {
         for line in output.lines() {
             if line.trim().starts_with("uciok") {
-                if let Ok(mut state) = state_query.get_mut(output.entity) {
+                if let Ok((engine_id, mut state, game_ref)) = state_query.get_mut(output.entity) {
                     println!("Engine ready!");
                     *state = EngineState::Ready;
+                    engine_initialized_event.send(EngineInitialized {
+                        engine_id,
+                        game_ref: *game_ref,
+                    })
                 }
             }
         }
