@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process, ProcessOutput};
 
-use crate::{process_log::LogSet, GameRef};
+use crate::{game::GameRef, process_log::LogSet};
 
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, Component)]
 enum EngineState {
@@ -13,7 +13,7 @@ enum EngineState {
 
 #[derive(Debug, Component, Event)]
 pub struct StartEngine {
-    pub game_id: Entity,
+    pub game_ref: GameRef,
     pub path: String,
 }
 
@@ -37,7 +37,7 @@ fn handle_start_engine(mut start_engine_event: EventReader<StartEngine>, mut com
     for start_engine in start_engine_event.read() {
         commands.spawn((
             EngineState::default(),
-            GameRef(start_engine.game_id),
+            start_engine.game_ref,
             LocalCommand::new(start_engine.path.clone()),
         ));
     }
