@@ -56,7 +56,7 @@ fn handle_engine_uci_init(
     mut state_query: Query<&mut EngineState>,
 ) {
     for output in output_event.read() {
-        for line in &output.output {
+        for line in output.lines() {
             if line.trim().starts_with("uciok") {
                 if let Ok(mut state) = state_query.get_mut(output.entity) {
                     println!("Engine ready!");
