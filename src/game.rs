@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 use pleco::{Board, Player};
 
-use crate::engine::{EngineInitialized, StartEngine};
+use crate::engine::{EngineInitialized, SearchMove, StartEngine};
 
 #[derive(Debug, Default, Component)]
 pub struct Game;
 
-#[derive(Debug, Component, Clone, Copy)]
+#[derive(Debug, Component, Clone, Copy, PartialEq)]
 pub struct GameRef {
     pub game_id: Entity,
     pub player: Player,
@@ -18,7 +18,7 @@ pub enum GameState {
     WaitingForPlayer { player: Player },
 }
 
-#[derive(Debug, Default, Component, Deref, DerefMut)]
+#[derive(Debug, Default, Component, Deref, DerefMut, Clone)]
 pub struct GameBoard(Board);
 
 #[derive(Debug, Event)]
@@ -75,10 +75,13 @@ fn handle_game_creation(
 
 fn handle_engine_startup_engine_initialization(
     mut engine_initialized_event: EventReader<EngineInitialized>,
-    mut game_query: Query<&mut GameState>,
+    mut game_query: Query<(Entity, &mut GameState, &GameBoard)>,
+    mut search_move_event: EventWriter<SearchMove>,
 ) {
     for engine_initialized in engine_initialized_event.read() {
-        if let Ok(mut game_state) = game_query.get_mut(engine_initialized.game_ref.game_id) {
+        if let Ok((game_id, mut game_state, game_board)) =
+            game_query.get_mut(engine_initialized.game_ref.game_id)
+        {
             if let GameState::PlayerInitialization { white, black } = *game_state {
                 let new_white = white || engine_initialized.game_ref.player == Player::White;
                 let new_black = black || engine_initialized.game_ref.player == Player::Black;
@@ -86,8 +89,16 @@ fn handle_engine_startup_engine_initialization(
                 if new_white && new_black {
                     *game_state = GameState::WaitingForPlayer {
                         player: Player::White,
-                    }
-                    // TODO: Send first move command
+                    };
+
+                    // White moves first
+                    search_move_event.send(SearchMove {
+                        game_ref: GameRef {
+                            game_id,
+                            player: Player::White,
+                        },
+                        game_board: game_board.clone(),
+                    });
                 } else {
                     *game_state = GameState::PlayerInitialization {
                         white: new_white,
