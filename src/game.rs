@@ -16,6 +16,7 @@ pub struct GameRef {
 pub enum GameState {
     PlayerInitialization { white: bool, black: bool },
     WaitingForPlayer { player: Player },
+    Finished,
 }
 
 #[derive(Debug, Default, Component, Deref, DerefMut, Clone)]
@@ -132,18 +133,24 @@ fn handle_engine_search_result(
 
             println!("Played {} -> {}", search_result.uci_move, game_board.fen());
 
-            // Next player's turn
-            *game_state = GameState::WaitingForPlayer {
-                player: game_board.turn(),
-            };
+            if game_board.checkmate() {
+                *game_state = GameState::Finished;
 
-            search_move_event.send(SearchMove {
-                game_ref: GameRef {
-                    game_id,
+                println!("Game over, {:?} won!", game_board.turn().other_player());
+            } else {
+                // Next player's turn
+                *game_state = GameState::WaitingForPlayer {
                     player: game_board.turn(),
-                },
-                game_board: game_board.clone(),
-            });
+                };
+
+                search_move_event.send(SearchMove {
+                    game_ref: GameRef {
+                        game_id,
+                        player: game_board.turn(),
+                    },
+                    game_board: game_board.clone(),
+                });
+            }
         }
     }
 }
