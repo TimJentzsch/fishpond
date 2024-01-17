@@ -27,15 +27,17 @@ pub struct EnginePlugin;
 
 impl Plugin for EnginePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<StartEngine>().add_systems(
-            Update,
-            (
-                handle_start_engine,
-                handle_engine_startup,
-                handle_engine_uci_init,
-            )
-                .after(LogSet),
-        );
+        app.add_event::<StartEngine>()
+            .add_event::<EngineInitialized>()
+            .add_systems(
+                Update,
+                (
+                    handle_start_engine,
+                    handle_engine_startup,
+                    handle_engine_uci_init,
+                )
+                    .after(LogSet),
+            );
     }
 }
 

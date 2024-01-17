@@ -28,7 +28,7 @@ pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(
+        app.add_event::<CreateGame>().add_systems(
             Update,
             (
                 handle_game_creation,

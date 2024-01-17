@@ -3,7 +3,7 @@ use std::time::Duration;
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
 use bevy_local_commands::BevyLocalCommandsPlugin;
 use engine::EnginePlugin;
-use game::CreateGame;
+use game::{CreateGame, GamePlugin};
 use process_log::ProcessLogPlugin;
 
 mod engine;
@@ -20,6 +20,7 @@ fn main() {
             BevyLocalCommandsPlugin,
             ProcessLogPlugin,
             EnginePlugin,
+            GamePlugin,
         ))
         .add_systems(Startup, create_game)
         .run();
