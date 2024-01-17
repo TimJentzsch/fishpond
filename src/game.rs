@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 use pleco::{Board, Player};
 
-use crate::engine::{EngineInitialized, SearchMove, StartEngine};
+use crate::engine::{EngineInitialized, SearchMove, SearchResult, StartEngine};
 
 #[derive(Debug, Default, Component)]
 pub struct Game;
@@ -33,6 +33,7 @@ impl Plugin for GamePlugin {
             (
                 handle_game_creation,
                 handle_engine_startup_engine_initialization,
+                handle_engine_search_result,
             ),
         );
     }
@@ -106,6 +107,43 @@ fn handle_engine_startup_engine_initialization(
                     };
                 }
             }
+        }
+    }
+}
+
+fn handle_engine_search_result(
+    mut search_result_event: EventReader<SearchResult>,
+    mut game_query: Query<(Entity, &mut GameState, &mut GameBoard)>,
+    mut search_move_event: EventWriter<SearchMove>,
+) {
+    for search_result in search_result_event.read() {
+        if let Ok((game_id, mut game_state, mut game_board)) =
+            game_query.get_mut(search_result.game_ref.game_id)
+        {
+            if !search_result.game_ref.player == game_board.turn() {
+                println!("Wrong player");
+                continue;
+            }
+
+            if !game_board.apply_uci_move(&search_result.uci_move) {
+                println!("Invalid UCI move {}", search_result.uci_move);
+                continue;
+            }
+
+            println!("Played {} -> {}", search_result.uci_move, game_board.fen());
+
+            // Next player's turn
+            *game_state = GameState::WaitingForPlayer {
+                player: game_board.turn(),
+            };
+
+            search_move_event.send(SearchMove {
+                game_ref: GameRef {
+                    game_id,
+                    player: game_board.turn(),
+                },
+                game_board: game_board.clone(),
+            });
         }
     }
 }

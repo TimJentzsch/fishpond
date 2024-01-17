@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{io::Write, time::Duration};
 
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process, ProcessOutput};
@@ -37,6 +37,12 @@ pub struct SearchMove {
     pub game_board: GameBoard,
 }
 
+#[derive(Debug, Event)]
+pub struct SearchResult {
+    pub game_ref: GameRef,
+    pub uci_move: String,
+}
+
 pub struct EnginePlugin;
 
 impl Plugin for EnginePlugin {
@@ -44,6 +50,7 @@ impl Plugin for EnginePlugin {
         app.add_event::<StartEngine>()
             .add_event::<EngineInitialized>()
             .add_event::<SearchMove>()
+            .add_event::<SearchResult>()
             .add_systems(
                 Update,
                 (
@@ -51,6 +58,7 @@ impl Plugin for EnginePlugin {
                     handle_engine_startup,
                     handle_engine_uci_init,
                     handle_move_search,
+                    handle_search_result,
                 )
                     .after(LogSet),
             );
@@ -106,10 +114,40 @@ fn handle_move_search(
             .iter_mut()
             .find(|(_, game_ref)| search_move.game_ref == **game_ref)
         {
-            // Search for one second in the current position
-            writeln!(&mut process, "position {}", search_move.game_board.fen()).unwrap();
-            writeln!(&mut process, "go movetime 1000").unwrap();
+            let search_time = Duration::from_millis(200);
+
+            // Search for a fixed time in the current position
+            writeln!(
+                &mut process,
+                "position fen {}",
+                search_move.game_board.fen()
+            )
+            .unwrap();
+            writeln!(&mut process, "go movetime {}", search_time.as_millis()).unwrap();
             process.flush().unwrap();
+        }
+    }
+}
+
+fn handle_search_result(
+    mut output_event: EventReader<ProcessOutput>,
+    game_ref_query: Query<&GameRef>,
+    mut search_result_event: EventWriter<SearchResult>,
+) {
+    for output in output_event.read() {
+        for line in output.lines() {
+            let mut tokens = line.split_ascii_whitespace();
+
+            if let Some("bestmove") = tokens.next() {
+                if let Some(uci_move) = tokens.next() {
+                    let game_ref = game_ref_query.get(output.entity).unwrap();
+
+                    search_result_event.send(SearchResult {
+                        game_ref: *game_ref,
+                        uci_move: uci_move.to_string(),
+                    })
+                }
+            }
         }
     }
 }
