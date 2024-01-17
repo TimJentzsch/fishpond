@@ -14,7 +14,7 @@ impl Plugin for ProcessLogPlugin {
 
 fn log_output(mut output_event: EventReader<ProcessOutput>) {
     for output in output_event.read() {
-        println!("{}", output.output.join("\n"));
+        println!("{}", output.all());
     }
 }
 

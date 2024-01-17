@@ -2,17 +2,13 @@ use std::time::Duration;
 
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
 use bevy_local_commands::BevyLocalCommandsPlugin;
-use engine::{EnginePlugin, StartEngine};
+use engine::EnginePlugin;
+use game::{CreateGame, GamePlugin};
 use process_log::ProcessLogPlugin;
 
 mod engine;
+mod game;
 mod process_log;
-
-#[derive(Debug, Default, Component)]
-struct Game;
-
-#[derive(Debug, Component)]
-struct GameRef(Entity);
 
 fn main() {
     App::new()
@@ -24,15 +20,12 @@ fn main() {
             BevyLocalCommandsPlugin,
             ProcessLogPlugin,
             EnginePlugin,
+            GamePlugin,
         ))
-        .add_systems(Startup, start_stockfish)
+        .add_systems(Startup, create_game)
         .run();
 }
 
-fn start_stockfish(mut commands: Commands, mut start_engine_event: EventWriter<StartEngine>) {
-    let game_id = commands.spawn(Game).id();
-    start_engine_event.send(StartEngine {
-        game_id,
-        path: "stockfish".to_string(),
-    });
+fn create_game(mut create_game_event: EventWriter<CreateGame>) {
+    create_game_event.send(CreateGame);
 }
