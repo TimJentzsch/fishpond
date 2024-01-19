@@ -11,7 +11,7 @@ where
     current_position: P,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum Action {
     /// A move on the board.
     Move(Move),
@@ -45,6 +45,75 @@ where
     /// Obtain the current position of the game.
     pub fn current_position(&self) -> &P {
         &self.current_position
+    }
+
+    /// An iterator over all moves played in the game.
+    pub fn moves(&self) -> impl Iterator<Item = &Move> {
+        self.actions.iter().filter_map(|action| {
+            if let Action::Move(r#move) = action {
+                Some(r#move)
+            } else {
+                None
+            }
+        })
+    }
+
+    /// Offer a draw to the opponent.
+    /// `color` is the player who offered the draw.
+    ///
+    /// The draw must accepted before the opponent moves.
+    ///
+    /// If the game is already over, [`Err`] is returned.
+    pub fn offer_draw(&mut self, color: Color) -> Result<(), ()> {
+        if self.outcome().is_some() {
+            Err(())
+        } else {
+            self.actions.push(Action::OfferDraw(color));
+            Ok(())
+        }
+    }
+
+    /// Accept a draw offer from the opponent.
+    ///
+    /// The opponent must have offered a draw first, otherwise [`Err`] is returned.
+    pub fn accept_draw(&mut self) -> Result<(), ()> {
+        if self.outcome().is_some() {
+            return Err(());
+        }
+
+        let mut iter = self.actions.iter().rev();
+
+        if let Some(last) = iter.next() {
+            match last {
+                Action::OfferDraw(_) => {
+                    self.actions.push(Action::AcceptDraw);
+                    Ok(())
+                }
+                Action::Move(_) => {
+                    if Some(&Action::OfferDraw(self.turn().other())) == iter.next() {
+                        self.actions.push(Action::AcceptDraw);
+                        Ok(())
+                    } else {
+                        Err(())
+                    }
+                }
+                _ => Err(()),
+            }
+        } else {
+            Err(())
+        }
+    }
+
+    /// `color` resigns the game.
+    ///
+    /// Returns [`Err`] if the game is already over.
+    pub fn resign(&mut self, color: Color) -> Result<(), ()> {
+        if self.outcome().is_some() {
+            Err(())
+        } else {
+            self.actions.push(Action::Resign(color));
+            Ok(())
+        }
     }
 }
 
