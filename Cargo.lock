@@ -1616,6 +1616,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "fishpond_game"
+version = "0.1.0"
+dependencies = [
+ "bevy_ecs",
+ "shakmaty",
+]
+
+[[package]]
 name = "fixedbitset"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

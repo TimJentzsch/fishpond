@@ -1,7 +1,9 @@
-use bevy::ecs::component::Component;
+#[cfg(feature = "bevy")]
+use bevy_ecs::component::Component;
 use shakmaty::{Color, Move, Position};
 
-#[derive(Debug, Clone, Component)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "bevy", derive(Component))]
 pub struct Game<P>
 where
     P: Position,

@@ -3,8 +3,6 @@ use shakmaty::{fen::Fen, Chess, Color, Move, Outcome, Position};
 
 use crate::engine::{EngineInitialized, SearchMove, SearchResult, StartEngine};
 
-mod game;
-
 #[derive(Debug, Default, Component)]
 pub struct Game;
 
