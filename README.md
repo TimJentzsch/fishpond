@@ -4,7 +4,9 @@
 
 Fishpond is a chess GUI targeted at chess engine developers.
 
-⚠️ **This project is very much work in progress and not really usable yet!** ⚠️
+> [!WARNING]
+>
+>  **This project is very much work in progress and not really usable yet!**
 
 ## Goals
 
