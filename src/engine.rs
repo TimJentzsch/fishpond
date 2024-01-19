@@ -5,7 +5,7 @@ use bevy_local_commands::{LocalCommand, Process, ProcessOutput};
 use shakmaty::{fen::Fen, uci::Uci};
 
 use crate::{
-    game::{GameBoard, GameRef},
+    chess::{GameBoard, GameRef},
     process_log::LogSet,
 };
 
