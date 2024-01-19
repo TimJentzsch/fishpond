@@ -2,6 +2,7 @@ use std::{io::Write, time::Duration};
 
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process, ProcessOutput};
+use shakmaty::{fen::Fen, uci::Uci};
 
 use crate::{
     game::{GameBoard, GameRef},
@@ -40,7 +41,7 @@ pub struct SearchMove {
 #[derive(Debug, Event)]
 pub struct SearchResult {
     pub game_ref: GameRef,
-    pub uci_move: String,
+    pub uci_move: Uci,
 }
 
 pub struct EnginePlugin;
@@ -120,7 +121,10 @@ fn handle_move_search(
             writeln!(
                 &mut process,
                 "position fen {}",
-                search_move.game_board.fen()
+                Fen::from_position(
+                    search_move.game_board.clone(),
+                    shakmaty::EnPassantMode::Legal
+                )
             )
             .unwrap();
             writeln!(&mut process, "go movetime {}", search_time.as_millis()).unwrap();
@@ -139,13 +143,15 @@ fn handle_search_result(
             let mut tokens = line.split_ascii_whitespace();
 
             if let Some("bestmove") = tokens.next() {
-                if let Some(uci_move) = tokens.next() {
-                    let game_ref = game_ref_query.get(output.entity).unwrap();
+                if let Some(uci_str) = tokens.next() {
+                    if let Ok(uci_move) = uci_str.parse() {
+                        let game_ref = game_ref_query.get(output.entity).unwrap();
 
-                    search_result_event.send(SearchResult {
-                        game_ref: *game_ref,
-                        uci_move: uci_move.to_string(),
-                    })
+                        search_result_event.send(SearchResult {
+                            game_ref: *game_ref,
+                            uci_move,
+                        })
+                    }
                 }
             }
         }
