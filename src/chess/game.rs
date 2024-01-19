@@ -6,14 +6,23 @@ pub struct Game<P>
 where
     P: Position,
 {
+    /// The position from which the game started.
     start_position: P,
+
+    /// All actions that have happened throughout the game.
     actions: Vec<Action>,
+
+    /// The current position of the game.
+    ///
+    /// This is position resulting in playing all moves from [`actions`](Game::actions) on [`start_position`](Game::start_position).
     current_position: P,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Action {
     /// A move on the board.
+    ///
+    /// This must be a valid move in the current position.
     Move(Move),
 
     /// The given color offers the opponent a draw.
