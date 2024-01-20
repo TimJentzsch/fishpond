@@ -141,15 +141,26 @@ fn handle_engine_search_result(
                 Fen::from_position(game.clone(), shakmaty::EnPassantMode::Legal)
             );
 
-            // Automatically declare draw on fivefold repetition
-            if let Some(DeclareDrawReason::Repetition {
-                count: repetitions,
-                claimed_by: _,
-            }) = game.can_declare_draw()
-            {
-                if repetitions >= 5 {
-                    game.declare_draw()
-                        .expect("Could not declare draw on fivefold repetition");
+            // Check if the game should be declared as draw
+            if let Some(reason) = game.can_declare_draw() {
+                match reason {
+                    DeclareDrawReason::Repetition {
+                        count: repetitions,
+                        claimed_by: _,
+                    } => {
+                        if repetitions >= 5 {
+                            // Automatically declare draw on fivefold repetition
+                            game.declare_draw()
+                                .expect("Could not declare draw on fivefold repetition");
+                        }
+                    }
+                    DeclareDrawReason::FiftyMoveRule { halfmoves } => {
+                        if halfmoves >= 150 {
+                            // Automatically declare draw on seventy-five-move rule
+                            game.declare_draw()
+                                .expect("Could not declare draw on seventy-five-move rule");
+                        }
+                    }
                 }
             }
 
