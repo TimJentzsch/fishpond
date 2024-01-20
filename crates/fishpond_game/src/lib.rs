@@ -5,7 +5,7 @@ use bevy_ecs::component::Component;
 use shakmaty::{
     fen::Fen,
     zobrist::{Zobrist128, ZobristHash},
-    Color, Move, Position, Role,
+    Color, Move, Position,
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -30,12 +30,12 @@ pub enum DeclareDrawReason {
     /// if no capture has been made and no pawn has been moved in the last fifty moves
     /// (for this purpose a "move" consists of a player completing a turn followed by the opponent completing a turn).
     FiftyMoveRule {
-        /// The number of *plies* without capture or pawn push.
+        /// The number of *half moves* without capture or pawn push.
         ///
-        /// Note that a *move* equals two *plies*, so the count will be at least 100.
+        /// Note that a *move* equals two *half moves*, so the count will be at least 100.
         ///
         /// Under FIDE rules, the game is automatically declared a draw if for 75 moves, so when the count reaches 150.
-        ply_count: usize,
+        halfmoves: u32,
     },
 }
 
@@ -109,13 +109,6 @@ where
     ///
     /// Used to determine repetition draws.
     position_hashes: Vec<Zobrist128>,
-
-    /// The number of *plies* without captures or pawn pushes.
-    ///
-    /// Used to determine fifty-move rule draws.
-    ///
-    /// Note that this counts *plies* and not *moves*.
-    fifty_move_plies: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -161,7 +154,6 @@ where
             position_hashes: vec![start_position.zobrist_hash(shakmaty::EnPassantMode::Legal)],
             start_position,
             actions: Vec::new(),
-            fifty_move_plies: 0,
         }
     }
 
@@ -272,9 +264,9 @@ where
         }
 
         // FIFTY-MOVE RULE
-        if self.fifty_move_plies >= 50 {
+        if self.halfmoves() >= 100 {
             return Some(DeclareDrawReason::FiftyMoveRule {
-                ply_count: self.fifty_move_plies,
+                halfmoves: self.halfmoves(),
             });
         }
 
@@ -460,11 +452,5 @@ impl<P: Position + Clone> Position for Game<P> {
             self.current_position()
                 .zobrist_hash(shakmaty::EnPassantMode::Legal),
         );
-        // Track plies for fifty-move rule
-        if m.is_capture() || m.is_castle() || m.role() == Role::Pawn {
-            self.fifty_move_plies = 0;
-        } else {
-            self.fifty_move_plies += 1;
-        }
     }
 }
