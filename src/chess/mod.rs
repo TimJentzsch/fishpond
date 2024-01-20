@@ -1,6 +1,6 @@
 use bevy::prelude::*;
-use fishpond_game::{DeclareDrawReason, Game};
-use shakmaty::{fen::Fen, Chess, Color, Outcome, Position};
+use fishpond_game::{DeclareDrawReason, Game, Outcome};
+use shakmaty::{fen::Fen, Chess, Color, Position};
 
 use crate::engine::{EngineInitialized, SearchMove, SearchResult, StartEngine};
 
@@ -141,27 +141,29 @@ fn handle_engine_search_result(
                 Fen::from_position(game.clone(), shakmaty::EnPassantMode::Legal)
             );
 
-            // Check if the game is over
-            if let Some(outcome) = game.outcome() {
-                *game_state = GameState::Finished;
-
-                match outcome {
-                    Outcome::Decisive { winner } => println!("Game over, {winner} won!"),
-                    Outcome::Draw => println!("Game over with a draw!"),
-                };
-                return;
-            } else if let Some(DeclareDrawReason::Repetition {
+            // Automatically declare draw on fivefold repetition
+            if let Some(DeclareDrawReason::Repetition {
                 repetitions,
                 claimed_by: _,
             }) = game.can_declare_draw()
             {
                 if repetitions >= 5 {
-                    // Automatically declare fivefold repetition
-                    *game_state = GameState::Finished;
-
-                    println!("Game over with a draw! Fivefold repetition.");
-                    return;
+                    game.declare_draw()
+                        .expect("Could not declare draw on fivefold repetition");
                 }
+            }
+
+            // Check if the game is over
+            if let Some(outcome) = game.game_outcome() {
+                *game_state = GameState::Finished;
+
+                match outcome {
+                    Outcome::Decisive { winner, reason } => {
+                        println!("GAME OVER | {winner} WON due to {reason:?}!")
+                    }
+                    Outcome::Draw { reason } => println!("GAME OVER | DRAW due to {reason:?}"),
+                };
+                return;
             }
 
             // Next player's turn
