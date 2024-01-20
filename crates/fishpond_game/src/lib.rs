@@ -21,7 +21,7 @@ where
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-enum Action {
+pub enum Action {
     /// A move on the board.
     ///
     /// This must be a valid move in the current position.
@@ -53,9 +53,19 @@ where
         }
     }
 
+    /// The start position of the game.
+    pub fn start_position(&self) -> &P {
+        &self.start_position
+    }
+
     /// Obtain the current position of the game.
     pub fn current_position(&self) -> &P {
         &self.current_position
+    }
+
+    /// All actions which happened in the game.
+    pub fn actions(&self) -> &[Action] {
+        &self.actions
     }
 
     /// An iterator over all moves played in the game.
