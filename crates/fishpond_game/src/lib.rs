@@ -2,7 +2,24 @@ use std::{error::Error, fmt::Display};
 
 #[cfg(feature = "bevy")]
 use bevy_ecs::component::Component;
-use shakmaty::{fen::Fen, Color, Move, Position};
+use shakmaty::{
+    fen::Fen,
+    zobrist::{Zobrist128, ZobristHash},
+    Color, Move, Position,
+};
+
+pub enum DeclareDrawReason {
+    /// The same position was repeated at least 3 times.
+    ///
+    /// Note that this applies to *positions*, not *moves*.
+    /// The positions may have occurred in any order.
+    ///
+    /// Under FIDE rules, a fivefold repetition is an instant draw, without any players having to declare it.
+    Repetition {
+        repetitions: usize,
+        claimed_by: Color,
+    },
+}
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "bevy", derive(Component))]
@@ -20,6 +37,11 @@ where
     ///
     /// This is position resulting in playing all moves from [`actions`](Game::actions) on [`start_position`](Game::start_position).
     current_position: P,
+
+    /// Zobrist hashes of all positions which have occurred during the game.
+    ///
+    /// Used to determine repetition draws.
+    position_hashes: Vec<Zobrist128>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -62,6 +84,7 @@ where
     pub fn from_start_position(start_position: P) -> Self {
         Self {
             current_position: start_position.clone(),
+            position_hashes: vec![start_position.zobrist_hash(shakmaty::EnPassantMode::Legal)],
             start_position,
             actions: Vec::new(),
         }
@@ -166,6 +189,55 @@ where
             format!("fen {uci_start} moves {}", uci_moves.join(" "))
         }
     }
+
+    /// Determine if a draw can be declared.
+    pub fn can_declare_draw(&self) -> Option<DeclareDrawReason> {
+        if self.outcome().is_some() {
+            return None;
+        }
+
+        // TODO: 50 move rule
+
+        // REPETITIONS
+        if self.position_hashes.is_empty() {
+            return None;
+        }
+
+        // Either: The last move resulted in a position which occurred at least 3 times in the game
+        let last_hash = self.position_hashes.last().unwrap();
+        let repetitions = self
+            .position_hashes
+            .iter()
+            .filter(|hash| *hash == last_hash)
+            .count();
+        if repetitions >= 3 {
+            return Some(DeclareDrawReason::Repetition {
+                repetitions,
+                claimed_by: self.current_position().turn(),
+            });
+        }
+
+        // Or: The current player can make a move which would result in a position repeated at least 3 times
+        for r#move in self.current_position().legal_moves() {
+            let mut new_position = self.current_position().clone();
+            new_position.play_unchecked(&r#move);
+            let last_hash: Zobrist128 = new_position.zobrist_hash(shakmaty::EnPassantMode::Legal);
+            let repetitions = self
+                .position_hashes
+                .iter()
+                .filter(|hash| **hash == last_hash)
+                .count()
+                + 1;
+            if repetitions >= 3 {
+                return Some(DeclareDrawReason::Repetition {
+                    repetitions,
+                    claimed_by: self.current_position().turn(),
+                });
+            }
+        }
+
+        None
+    }
 }
 
 impl<P: Position + Clone> Position for Game<P> {
@@ -228,5 +300,9 @@ impl<P: Position + Clone> Position for Game<P> {
     fn play_unchecked(&mut self, m: &Move) {
         self.actions.push(Action::Move(m.clone()));
         self.current_position.play_unchecked(m);
+        self.position_hashes.push(
+            self.current_position()
+                .zobrist_hash(shakmaty::EnPassantMode::Legal),
+        );
     }
 }
