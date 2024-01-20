@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use fishpond_game::Game;
+use fishpond_game::{DeclareDrawReason, Game};
 use shakmaty::{fen::Fen, Chess, Color, Outcome, Position};
 
 use crate::engine::{EngineInitialized, SearchMove, SearchResult, StartEngine};
@@ -141,6 +141,7 @@ fn handle_engine_search_result(
                 Fen::from_position(game.clone(), shakmaty::EnPassantMode::Legal)
             );
 
+            // Check if the game is over
             if let Some(outcome) = game.outcome() {
                 *game_state = GameState::Finished;
 
@@ -148,20 +149,33 @@ fn handle_engine_search_result(
                     Outcome::Decisive { winner } => println!("Game over, {winner} won!"),
                     Outcome::Draw => println!("Game over with a draw!"),
                 };
-            } else {
-                // Next player's turn
-                *game_state = GameState::WaitingForPlayer {
-                    player: game.turn(),
-                };
+                return;
+            } else if let Some(DeclareDrawReason::Repetition {
+                repetitions,
+                claimed_by: _,
+            }) = game.can_declare_draw()
+            {
+                if repetitions >= 5 {
+                    // Automatically declare fivefold repetition
+                    *game_state = GameState::Finished;
 
-                search_move_event.send(SearchMove {
-                    game_ref: GameRef {
-                        game_id,
-                        player: game.turn(),
-                    },
-                    game: game.clone(),
-                });
+                    println!("Game over with a draw! Fivefold repetition.");
+                    return;
+                }
             }
+
+            // Next player's turn
+            *game_state = GameState::WaitingForPlayer {
+                player: game.turn(),
+            };
+
+            search_move_event.send(SearchMove {
+                game_ref: GameRef {
+                    game_id,
+                    player: game.turn(),
+                },
+                game: game.clone(),
+            });
         }
     }
 }
