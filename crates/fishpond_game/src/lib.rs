@@ -289,10 +289,22 @@ where
         None
     }
 
+    /// Try to declare the game a draw.
+    ///
+    /// Returns [`Err`] if [`Game::can_declare_draw`] returns [`None`].
+    pub fn declare_draw(&mut self) -> Result<(), InvalidAction> {
+        if let Some(reason) = self.can_declare_draw() {
+            self.actions.push(Action::DeclareDraw(reason));
+            Ok(())
+        } else {
+            Err(InvalidAction)
+        }
+    }
+
     /// Check if the game has ended and get the corresponding reason.
     ///
     /// Returns [`None`] if the game is still ongoing.
-    fn game_outcome(&self) -> Option<Outcome> {
+    pub fn game_outcome(&self) -> Option<Outcome> {
         if let Some(variant_outcome) = self.variant_outcome() {
             // An outcome determined by the variant
             // Just needs to be converted and the variant reason attached
