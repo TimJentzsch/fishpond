@@ -1,10 +1,8 @@
 use bevy::prelude::*;
-use shakmaty::{fen::Fen, Chess, Color, Move, Outcome, Position};
+use fishpond_game::{DeclareDrawReason, Game, Outcome};
+use shakmaty::{fen::Fen, Chess, Color, Position};
 
 use crate::engine::{EngineInitialized, SearchMove, SearchResult, StartEngine};
-
-#[derive(Debug, Default, Component)]
-pub struct Game;
 
 #[derive(Debug, Component, Clone, Copy, PartialEq)]
 pub struct GameRef {
@@ -17,71 +15,6 @@ pub enum GameState {
     PlayerInitialization { white: bool, black: bool },
     WaitingForPlayer { player: Color },
     Finished,
-}
-
-#[derive(Debug, Default, Component, Deref, DerefMut, Clone)]
-pub struct GameBoard(Chess);
-
-impl Position for GameBoard {
-    fn board(&self) -> &shakmaty::Board {
-        self.0.board()
-    }
-
-    fn promoted(&self) -> shakmaty::Bitboard {
-        self.0.promoted()
-    }
-
-    fn pockets(&self) -> Option<&shakmaty::ByColor<shakmaty::ByRole<u8>>> {
-        self.0.pockets()
-    }
-
-    fn turn(&self) -> Color {
-        self.0.turn()
-    }
-
-    fn castles(&self) -> &shakmaty::Castles {
-        self.0.castles()
-    }
-
-    fn maybe_ep_square(&self) -> Option<shakmaty::Square> {
-        self.0.maybe_ep_square()
-    }
-
-    fn remaining_checks(&self) -> Option<&shakmaty::ByColor<shakmaty::RemainingChecks>> {
-        self.0.remaining_checks()
-    }
-
-    fn halfmoves(&self) -> u32 {
-        self.0.halfmoves()
-    }
-
-    fn fullmoves(&self) -> std::num::NonZeroU32 {
-        self.0.fullmoves()
-    }
-
-    fn into_setup(self, mode: shakmaty::EnPassantMode) -> shakmaty::Setup {
-        self.0.into_setup(mode)
-    }
-
-    fn legal_moves(&self) -> shakmaty::MoveList {
-        self.0.legal_moves()
-    }
-
-    fn is_variant_end(&self) -> bool {
-        self.0.is_variant_end()
-    }
-
-    fn has_insufficient_material(&self, color: Color) -> bool {
-        self.0.has_insufficient_material(color)
-    }
-
-    fn variant_outcome(&self) -> Option<Outcome> {
-        self.0.variant_outcome()
-    }
-
-    fn play_unchecked(&mut self, m: &Move) {
-        self.0.play_unchecked(m)
-    }
 }
 
 #[derive(Debug, Event)]
@@ -110,8 +43,7 @@ fn handle_game_creation(
     for _ in create_game_event.read() {
         let game_id = commands
             .spawn((
-                Game,
-                GameBoard::default(),
+                Game::from_start_position(Chess::default()),
                 GameState::PlayerInitialization {
                     white: false,
                     black: false,
@@ -139,11 +71,11 @@ fn handle_game_creation(
 
 fn handle_engine_startup_engine_initialization(
     mut engine_initialized_event: EventReader<EngineInitialized>,
-    mut game_query: Query<(Entity, &mut GameState, &GameBoard)>,
+    mut game_query: Query<(Entity, &mut GameState, &Game<Chess>)>,
     mut search_move_event: EventWriter<SearchMove>,
 ) {
     for engine_initialized in engine_initialized_event.read() {
-        if let Ok((game_id, mut game_state, game_board)) =
+        if let Ok((game_id, mut game_state, game)) =
             game_query.get_mut(engine_initialized.game_ref.game_id)
         {
             if let GameState::PlayerInitialization { white, black } = *game_state {
@@ -161,7 +93,7 @@ fn handle_engine_startup_engine_initialization(
                             game_id,
                             player: Color::White,
                         },
-                        game_board: game_board.clone(),
+                        game: game.clone(),
                     });
                 } else {
                     *game_state = GameState::PlayerInitialization {
@@ -176,53 +108,87 @@ fn handle_engine_startup_engine_initialization(
 
 fn handle_engine_search_result(
     mut search_result_event: EventReader<SearchResult>,
-    mut game_query: Query<(Entity, &mut GameState, &mut GameBoard)>,
+    mut game_query: Query<(Entity, &mut GameState, &mut Game<Chess>)>,
     mut search_move_event: EventWriter<SearchMove>,
 ) {
     for search_result in search_result_event.read() {
-        if let Ok((game_id, mut game_state, mut game_board)) =
+        if let Ok((game_id, mut game_state, mut game)) =
             game_query.get_mut(search_result.game_ref.game_id)
         {
-            if !search_result.game_ref.player == game_board.turn() {
+            if !search_result.game_ref.player == game.turn() {
                 println!("Wrong player");
                 continue;
             }
 
-            let Ok(r#move) = search_result.uci_move.to_move(&*game_board) else {
-                println!("Invalid UCI move");
+            let Ok(r#move) = search_result.uci_move.to_move(&*game) else {
+                println!(
+                    "Invalid UCI move {} in position {}",
+                    search_result.uci_move,
+                    Fen::from_position(
+                        game.current_position().clone(),
+                        shakmaty::EnPassantMode::Legal
+                    )
+                );
                 continue;
             };
 
             // Move is already validated when parsing UCI
-            game_board.play_unchecked(&r#move);
+            game.play_unchecked(&r#move);
 
             println!(
                 "Played {} -> {}",
                 search_result.uci_move,
-                Fen::from_position(game_board.clone(), shakmaty::EnPassantMode::Legal)
+                Fen::from_position(game.clone(), shakmaty::EnPassantMode::Legal)
             );
 
-            if let Some(outcome) = game_board.outcome() {
+            // Check if the game should be declared as draw
+            if let Some(reason) = game.can_declare_draw() {
+                match reason {
+                    DeclareDrawReason::Repetition {
+                        count: repetitions,
+                        claimed_by: _,
+                    } => {
+                        if repetitions >= 5 {
+                            // Automatically declare draw on fivefold repetition
+                            game.declare_draw()
+                                .expect("Could not declare draw on fivefold repetition");
+                        }
+                    }
+                    DeclareDrawReason::FiftyMoveRule { halfmoves } => {
+                        if halfmoves >= 150 {
+                            // Automatically declare draw on seventy-five-move rule
+                            game.declare_draw()
+                                .expect("Could not declare draw on seventy-five-move rule");
+                        }
+                    }
+                }
+            }
+
+            // Check if the game is over
+            if let Some(outcome) = game.game_outcome() {
                 *game_state = GameState::Finished;
 
                 match outcome {
-                    Outcome::Decisive { winner } => println!("Game over, {winner} won!"),
-                    Outcome::Draw => println!("Game over with a draw!"),
+                    Outcome::Decisive { winner, reason } => {
+                        println!("GAME OVER | {winner} WON due to {reason:?}!")
+                    }
+                    Outcome::Draw { reason } => println!("GAME OVER | DRAW due to {reason:?}"),
                 };
-            } else {
-                // Next player's turn
-                *game_state = GameState::WaitingForPlayer {
-                    player: game_board.turn(),
-                };
-
-                search_move_event.send(SearchMove {
-                    game_ref: GameRef {
-                        game_id,
-                        player: game_board.turn(),
-                    },
-                    game_board: game_board.clone(),
-                });
+                return;
             }
+
+            // Next player's turn
+            *game_state = GameState::WaitingForPlayer {
+                player: game.turn(),
+            };
+
+            search_move_event.send(SearchMove {
+                game_ref: GameRef {
+                    game_id,
+                    player: game.turn(),
+                },
+                game: game.clone(),
+            });
         }
     }
 }

@@ -2,12 +2,12 @@ use std::time::Duration;
 
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
 use bevy_local_commands::BevyLocalCommandsPlugin;
+use chess::{CreateGame, GamePlugin};
 use engine::EnginePlugin;
-use game::{CreateGame, GamePlugin};
 use process_log::ProcessLogPlugin;
 
+mod chess;
 mod engine;
-mod game;
 mod process_log;
 
 fn main() {
