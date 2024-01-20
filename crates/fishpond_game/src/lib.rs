@@ -1,3 +1,5 @@
+use std::{error::Error, fmt::Display};
+
 #[cfg(feature = "bevy")]
 use bevy_ecs::component::Component;
 use shakmaty::{fen::Fen, Color, Move, Position};
@@ -39,6 +41,18 @@ pub enum Action {
     /// The given color resigns the game.
     Resign(Color),
 }
+
+/// The action is invalid in this position
+#[derive(Debug)]
+pub struct InvalidAction;
+
+impl Display for InvalidAction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "this action is not valid in the current game state")
+    }
+}
+
+impl Error for InvalidAction {}
 
 impl<P> Game<P>
 where
@@ -85,9 +99,9 @@ where
     /// The draw must accepted before the opponent moves.
     ///
     /// If the game is already over, [`Err`] is returned.
-    pub fn offer_draw(&mut self, color: Color) -> Result<(), ()> {
+    pub fn offer_draw(&mut self, color: Color) -> Result<(), InvalidAction> {
         if self.outcome().is_some() {
-            Err(())
+            Err(InvalidAction)
         } else {
             self.actions.push(Action::OfferDraw(color));
             Ok(())
@@ -97,9 +111,9 @@ where
     /// Accept a draw offer from the opponent.
     ///
     /// The opponent must have offered a draw first, otherwise [`Err`] is returned.
-    pub fn accept_draw(&mut self) -> Result<(), ()> {
+    pub fn accept_draw(&mut self) -> Result<(), InvalidAction> {
         if self.outcome().is_some() {
-            return Err(());
+            return Err(InvalidAction);
         }
 
         let mut iter = self.actions.iter().rev();
@@ -115,22 +129,22 @@ where
                         self.actions.push(Action::AcceptDraw);
                         Ok(())
                     } else {
-                        Err(())
+                        Err(InvalidAction)
                     }
                 }
-                _ => Err(()),
+                _ => Err(InvalidAction),
             }
         } else {
-            Err(())
+            Err(InvalidAction)
         }
     }
 
     /// `color` resigns the game.
     ///
     /// Returns [`Err`] if the game is already over.
-    pub fn resign(&mut self, color: Color) -> Result<(), ()> {
+    pub fn resign(&mut self, color: Color) -> Result<(), InvalidAction> {
         if self.outcome().is_some() {
-            Err(())
+            Err(InvalidAction)
         } else {
             self.actions.push(Action::Resign(color));
             Ok(())
