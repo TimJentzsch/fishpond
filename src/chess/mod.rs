@@ -143,7 +143,7 @@ fn handle_engine_search_result(
 
             // Automatically declare draw on fivefold repetition
             if let Some(DeclareDrawReason::Repetition {
-                repetitions,
+                count: repetitions,
                 claimed_by: _,
             }) = game.can_declare_draw()
             {

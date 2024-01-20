@@ -5,7 +5,7 @@ use bevy_ecs::component::Component;
 use shakmaty::{
     fen::Fen,
     zobrist::{Zobrist128, ZobristHash},
-    Color, Move, Position,
+    Color, Move, Position, Role,
 };
 
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
@@ -17,8 +17,25 @@ pub enum DeclareDrawReason {
     ///
     /// Under FIDE rules, a fivefold repetition is an instant draw, without any players having to declare it.
     Repetition {
-        repetitions: usize,
+        /// The number of times this position has been repeated.
+        ///
+        /// This will be at least 3.
+        ///
+        /// Under FIDE rules, the game is automatically declared a draw if the position was repeated 5 times.
+        count: usize,
         claimed_by: Color,
+    },
+
+    /// The fifty-move rule in chess states that a player can claim a draw
+    /// if no capture has been made and no pawn has been moved in the last fifty moves
+    /// (for this purpose a "move" consists of a player completing a turn followed by the opponent completing a turn).
+    FiftyMoveRule {
+        /// The number of *plies* without capture or pawn push.
+        ///
+        /// Note that a *move* equals two *plies*, so the count will be at least 100.
+        ///
+        /// Under FIDE rules, the game is automatically declared a draw if for 75 moves, so when the count reaches 150.
+        ply_count: usize,
     },
 }
 
@@ -92,6 +109,13 @@ where
     ///
     /// Used to determine repetition draws.
     position_hashes: Vec<Zobrist128>,
+
+    /// The number of *plies* without captures or pawn pushes.
+    ///
+    /// Used to determine fifty-move rule draws.
+    ///
+    /// Note that this counts *plies* and not *moves*.
+    fifty_move_plies: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -137,6 +161,7 @@ where
             position_hashes: vec![start_position.zobrist_hash(shakmaty::EnPassantMode::Legal)],
             start_position,
             actions: Vec::new(),
+            fifty_move_plies: 0,
         }
     }
 
@@ -246,7 +271,12 @@ where
             return None;
         }
 
-        // TODO: 50 move rule
+        // FIFTY-MOVE RULE
+        if self.fifty_move_plies >= 50 {
+            return Some(DeclareDrawReason::FiftyMoveRule {
+                ply_count: self.fifty_move_plies,
+            });
+        }
 
         // REPETITIONS
         if self.position_hashes.is_empty() {
@@ -262,7 +292,7 @@ where
             .count();
         if repetitions >= 3 {
             return Some(DeclareDrawReason::Repetition {
-                repetitions,
+                count: repetitions,
                 claimed_by: self.current_position().turn(),
             });
         }
@@ -280,7 +310,7 @@ where
                 + 1;
             if repetitions >= 3 {
                 return Some(DeclareDrawReason::Repetition {
-                    repetitions,
+                    count: repetitions,
                     claimed_by: self.current_position().turn(),
                 });
             }
@@ -420,11 +450,21 @@ impl<P: Position + Clone> Position for Game<P> {
     }
 
     fn play_unchecked(&mut self, m: &Move) {
+        // Track the move in the history
         self.actions.push(Action::Move(m.clone()));
+        // Update the current position
         self.current_position.play_unchecked(m);
+
+        // Track hashes for repetitions
         self.position_hashes.push(
             self.current_position()
                 .zobrist_hash(shakmaty::EnPassantMode::Legal),
         );
+        // Track plies for fifty-move rule
+        if m.is_capture() || m.is_castle() || m.role() == Role::Pawn {
+            self.fifty_move_plies = 0;
+        } else {
+            self.fifty_move_plies += 1;
+        }
     }
 }
