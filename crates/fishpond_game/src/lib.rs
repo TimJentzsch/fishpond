@@ -8,6 +8,7 @@ use shakmaty::{
     Color, Move, Position,
 };
 
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum DeclareDrawReason {
     /// The same position was repeated at least 3 times.
     ///
@@ -19,6 +20,55 @@ pub enum DeclareDrawReason {
         repetitions: usize,
         claimed_by: Color,
     },
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum DecisiveReason {
+    /// The winner delivered checkmate.
+    Checkmate,
+    /// The other player resigned.
+    Resigned,
+    /// Win by variant rules.
+    Variant,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum DrawReason {
+    /// The current player cannot make any moves, but is not in check.
+    Stalemate,
+    /// No player is able to deliver checkmate.
+    InsufficientMaterial,
+    /// Both players agreed to a draw.
+    MutualAgreement,
+    /// One of the players declared a draw, for the given reason.
+    Declared(DeclareDrawReason),
+    /// Draw by variant rules.
+    Variant,
+}
+
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
+pub enum Outcome {
+    /// A player one the game.
+    Decisive {
+        /// The player who won the game.
+        winner: Color,
+        /// The reason why the game was declared a win.
+        reason: DecisiveReason,
+    },
+    /// The game ended in a draw.
+    Draw {
+        /// The reason why the game was declared a draw.
+        reason: DrawReason,
+    },
+}
+
+impl From<Outcome> for shakmaty::Outcome {
+    fn from(value: Outcome) -> Self {
+        match value {
+            Outcome::Decisive { winner, reason: _ } => shakmaty::Outcome::Decisive { winner },
+            Outcome::Draw { reason: _ } => shakmaty::Outcome::Draw,
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -58,7 +108,7 @@ pub enum Action {
     AcceptDraw,
 
     /// A draw is declared by a player.
-    DeclareDraw,
+    DeclareDraw(DeclareDrawReason),
 
     /// The given color resigns the game.
     Resign(Color),
@@ -238,6 +288,61 @@ where
 
         None
     }
+
+    /// Check if the game has ended and get the corresponding reason.
+    ///
+    /// Returns [`None`] if the game is still ongoing.
+    fn game_outcome(&self) -> Option<Outcome> {
+        if let Some(variant_outcome) = self.variant_outcome() {
+            // An outcome determined by the variant
+            // Just needs to be converted and the variant reason attached
+            Some(match variant_outcome {
+                shakmaty::Outcome::Decisive { winner } => Outcome::Decisive {
+                    winner,
+                    reason: DecisiveReason::Variant,
+                },
+                shakmaty::Outcome::Draw => Outcome::Draw {
+                    reason: DrawReason::Variant,
+                },
+            })
+        } else if self.legal_moves().is_empty() {
+            Some(if self.is_check() {
+                // Checkmate
+                Outcome::Decisive {
+                    winner: !self.turn(),
+                    reason: DecisiveReason::Checkmate,
+                }
+            } else {
+                // Stalemate
+                Outcome::Draw {
+                    reason: DrawReason::Stalemate,
+                }
+            })
+        } else if self.is_insufficient_material() {
+            // Insufficient material
+            Some(Outcome::Draw {
+                reason: DrawReason::InsufficientMaterial,
+            })
+        } else {
+            // Check if a player action ended the game
+            match self.actions.last() {
+                // Resigned
+                Some(Action::Resign(color)) => Some(Outcome::Decisive {
+                    winner: color.other(),
+                    reason: DecisiveReason::Resigned,
+                }),
+                // Draw by agreement
+                Some(Action::AcceptDraw) => Some(Outcome::Draw {
+                    reason: DrawReason::MutualAgreement,
+                }),
+                // Draw declared
+                Some(Action::DeclareDraw(reason)) => Some(Outcome::Draw {
+                    reason: DrawReason::Declared(*reason),
+                }),
+                _ => None,
+            }
+        }
+    }
 }
 
 impl<P: Position + Clone> Position for Game<P> {
@@ -295,6 +400,11 @@ impl<P: Position + Clone> Position for Game<P> {
 
     fn variant_outcome(&self) -> Option<shakmaty::Outcome> {
         self.current_position().variant_outcome()
+    }
+
+    fn outcome(&self) -> Option<shakmaty::Outcome> {
+        // A game has more ways to end than just the position
+        self.game_outcome().map(|outcome| outcome.into())
     }
 
     fn play_unchecked(&mut self, m: &Move) {
