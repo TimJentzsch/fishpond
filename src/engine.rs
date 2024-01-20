@@ -2,12 +2,10 @@ use std::{io::Write, time::Duration};
 
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process, ProcessOutput};
-use shakmaty::{fen::Fen, uci::Uci};
+use fishpond_game::Game;
+use shakmaty::{uci::Uci, Chess};
 
-use crate::{
-    chess::{GameBoard, GameRef},
-    process_log::LogSet,
-};
+use crate::{chess::GameRef, process_log::LogSet};
 
 #[derive(Debug, Component)]
 struct Engine;
@@ -35,7 +33,7 @@ pub struct EngineInitialized {
 #[derive(Debug, Event)]
 pub struct SearchMove {
     pub game_ref: GameRef,
-    pub game_board: GameBoard,
+    pub game: Game<Chess>,
 }
 
 #[derive(Debug, Event)]
@@ -120,11 +118,8 @@ fn handle_move_search(
             // Search for a fixed time in the current position
             writeln!(
                 &mut process,
-                "position fen {}",
-                Fen::from_position(
-                    search_move.game_board.clone(),
-                    shakmaty::EnPassantMode::Legal
-                )
+                "position {}",
+                search_move.game.uci_position_with_moves()
             )
             .unwrap();
             writeln!(&mut process, "go movetime {}", search_time.as_millis()).unwrap();

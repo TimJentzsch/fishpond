@@ -10,6 +10,7 @@ license = "AGPL-3.0-or-later"
 bevy = "0.12"
 bevy_local_commands = "0.4.0"
 shakmaty = "0.26.0"
+fishpond_game = { path = "./crates/fishpond_game", features = ["bevy"] }
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package."*"]

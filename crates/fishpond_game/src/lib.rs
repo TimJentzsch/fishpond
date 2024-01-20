@@ -1,6 +1,6 @@
 #[cfg(feature = "bevy")]
 use bevy_ecs::component::Component;
-use shakmaty::{Color, Move, Position};
+use shakmaty::{fen::Fen, Color, Move, Position};
 
 #[derive(Debug, Clone)]
 #[cfg_attr(feature = "bevy", derive(Component))]
@@ -134,6 +134,22 @@ where
         } else {
             self.actions.push(Action::Resign(color));
             Ok(())
+        }
+    }
+
+    /// The position with move history in UCI notation.
+    pub fn uci_position_with_moves(&self) -> String {
+        let uci_start =
+            Fen::from_position(self.start_position.clone(), shakmaty::EnPassantMode::Legal);
+        let uci_moves: Vec<_> = self
+            .moves()
+            .map(|r#move| r#move.to_uci(shakmaty::CastlingMode::Standard).to_string())
+            .collect();
+
+        if uci_moves.is_empty() {
+            format!("fen {uci_start}")
+        } else {
+            format!("fen {uci_start} moves {}", uci_moves.join(" "))
         }
     }
 }
