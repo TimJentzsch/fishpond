@@ -4,11 +4,13 @@ use shakmaty::{san::San, Position};
 
 use crate::Game;
 
+/// Portable game notation (PGN) to record an entire chess game.
 pub struct Pgn<P: Position> {
     game: Game<P>,
 }
 
 impl<P: Position> Pgn<P> {
+    /// Create a portable game notation (PGN) for the given game.
     pub fn from_game(game: Game<P>) -> Self {
         Pgn { game }
     }
