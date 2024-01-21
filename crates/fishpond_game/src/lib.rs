@@ -8,6 +8,8 @@ use shakmaty::{
     Color, Move, Position,
 };
 
+pub mod pgn;
+
 #[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum DeclareDrawReason {
     /// The same position was repeated at least 3 times.
