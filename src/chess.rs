@@ -1,5 +1,5 @@
 use bevy::prelude::*;
-use fishpond_game::{DeclareDrawReason, Game, Outcome};
+use fishpond_game::{pgn::Pgn, DeclareDrawReason, Game, Outcome};
 use shakmaty::{fen::Fen, Chess, Color, Position};
 
 use crate::engine::{EngineInitialized, SearchMove, SearchResult, StartEngine};
@@ -168,12 +168,17 @@ fn handle_engine_search_result(
             if let Some(outcome) = game.game_outcome() {
                 *game_state = GameState::Finished;
 
+                // Log game in PGN notation
+                let pgn = Pgn::from_game(game.clone());
+                println!("\n{pgn}\n");
+
                 match outcome {
                     Outcome::Decisive { winner, reason } => {
                         println!("GAME OVER | {winner} WON due to {reason:?}!")
                     }
                     Outcome::Draw { reason } => println!("GAME OVER | DRAW due to {reason:?}"),
                 };
+
                 return;
             }
 

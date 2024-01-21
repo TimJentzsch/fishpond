@@ -35,14 +35,18 @@ impl<P: Position + Clone> Display for Pgn<P> {
         };
 
         writeln!(f, "[Result \"{result}\"]")?;
-        writeln!(f, "\n")?;
+        writeln!(f)?;
 
         let mut current_position = self.game.start_position().clone();
 
         for (index, r#move) in self.game.moves().enumerate() {
             if index % 2 == 0 {
                 // Move number
-                write!(f, "{}.", index + 1)?;
+                if index > 0 {
+                    write!(f, " {}.", index + 1)?;
+                } else {
+                    write!(f, "{}.", index + 1)?;
+                }
             }
 
             // Move in SAN notation
