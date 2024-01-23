@@ -7,6 +7,8 @@ use shakmaty::{uci::Uci, Chess};
 
 use crate::{chess::GameRef, process_log::LogSet};
 
+mod uci;
+
 #[derive(Debug, Component)]
 struct Engine;
 
