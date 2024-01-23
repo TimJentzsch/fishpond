@@ -15,12 +15,12 @@ impl Error for UciParseError {}
 
 /// A UCI command sent from the engine to the GUI.
 #[derive(Debug, Clone)]
-pub enum UciCmdToGui {
+pub enum UciToGuiCmd {
     UciOk,
     BestMove { uci_move: Uci },
 }
 
-impl FromStr for UciCmdToGui {
+impl FromStr for UciToGuiCmd {
     type Err = UciParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -28,11 +28,11 @@ impl FromStr for UciCmdToGui {
 
         if let Some(command) = tokens.next() {
             match command {
-                "uciok" => Ok(UciCmdToGui::UciOk),
+                "uciok" => Ok(UciToGuiCmd::UciOk),
                 "bestmove" => {
                     if let Some(uci_str) = tokens.next() {
                         if let Ok(uci_move) = uci_str.parse() {
-                            Ok(UciCmdToGui::BestMove { uci_move })
+                            Ok(UciToGuiCmd::BestMove { uci_move })
                         } else {
                             Err(UciParseError)
                         }

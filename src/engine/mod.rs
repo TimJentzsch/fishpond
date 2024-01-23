@@ -1,12 +1,15 @@
 use std::{io::Write, time::Duration};
 
 use bevy::prelude::*;
-use bevy_local_commands::{LocalCommand, Process, ProcessOutput};
+use bevy_local_commands::{LocalCommand, Process};
 use fishpond_game::Game;
 use shakmaty::{uci::Uci, Chess};
 
 use crate::{chess::GameRef, process_log::LogSet};
 
+use self::engine_to_gui::{EngineToGuiPlugin, UciToGui};
+
+mod engine_to_gui;
 mod uci;
 
 #[derive(Debug, Component)]
@@ -48,7 +51,8 @@ pub struct EnginePlugin;
 
 impl Plugin for EnginePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<StartEngine>()
+        app.add_plugins(EngineToGuiPlugin)
+            .add_event::<StartEngine>()
             .add_event::<EngineInitialized>()
             .add_event::<SearchMove>()
             .add_event::<SearchResult>()
@@ -57,9 +61,8 @@ impl Plugin for EnginePlugin {
                 (
                     handle_start_engine,
                     handle_engine_startup,
-                    handle_engine_uci_init,
                     handle_move_search,
-                    handle_search_result,
+                    handle_engine_to_gui,
                 )
                     .after(LogSet),
             );
@@ -85,23 +88,30 @@ fn handle_engine_startup(mut state_query: Query<(&mut EngineState, &mut Process)
     }
 }
 
-fn handle_engine_uci_init(
-    mut output_event: EventReader<ProcessOutput>,
+fn handle_engine_to_gui(
+    mut uci_to_gui_event: EventReader<UciToGui>,
     mut state_query: Query<(Entity, &mut EngineState, &GameRef)>,
     mut engine_initialized_event: EventWriter<EngineInitialized>,
+    mut search_result_event: EventWriter<SearchResult>,
 ) {
-    for output in output_event.read() {
-        for line in output.lines() {
-            if line.trim().starts_with("uciok") {
-                if let Ok((engine_id, mut state, game_ref)) = state_query.get_mut(output.entity) {
-                    println!("Engine ready!");
-                    *state = EngineState::Ready;
-                    engine_initialized_event.send(EngineInitialized {
-                        engine_id,
-                        game_ref: *game_ref,
-                    })
-                }
+    for uci_to_gui in uci_to_gui_event.read() {
+        let Ok((engine_id, mut state, game_ref)) = state_query.get_mut(uci_to_gui.entity) else {
+            continue;
+        };
+
+        match &uci_to_gui.command {
+            uci::UciToGuiCmd::UciOk => {
+                println!("Engine ready!");
+                *state = EngineState::Ready;
+                engine_initialized_event.send(EngineInitialized {
+                    engine_id,
+                    game_ref: *game_ref,
+                })
             }
+            uci::UciToGuiCmd::BestMove { uci_move } => search_result_event.send(SearchResult {
+                game_ref: *game_ref,
+                uci_move: uci_move.clone(),
+            }),
         }
     }
 }
@@ -126,31 +136,6 @@ fn handle_move_search(
             .unwrap();
             writeln!(&mut process, "go movetime {}", search_time.as_millis()).unwrap();
             process.flush().unwrap();
-        }
-    }
-}
-
-fn handle_search_result(
-    mut output_event: EventReader<ProcessOutput>,
-    game_ref_query: Query<&GameRef>,
-    mut search_result_event: EventWriter<SearchResult>,
-) {
-    for output in output_event.read() {
-        for line in output.lines() {
-            let mut tokens = line.split_ascii_whitespace();
-
-            if let Some("bestmove") = tokens.next() {
-                if let Some(uci_str) = tokens.next() {
-                    if let Ok(uci_move) = uci_str.parse() {
-                        let game_ref = game_ref_query.get(output.entity).unwrap();
-
-                        search_result_event.send(SearchResult {
-                            game_ref: *game_ref,
-                            uci_move,
-                        })
-                    }
-                }
-            }
         }
     }
 }
