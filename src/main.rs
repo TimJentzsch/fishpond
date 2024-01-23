@@ -9,6 +9,7 @@ use process_log::ProcessLogPlugin;
 mod chess;
 mod engine;
 mod process_log;
+mod uci;
 
 fn main() {
     App::new()
