@@ -1,4 +1,4 @@
-use std::{io::Write, time::Duration};
+use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process};
@@ -7,9 +7,13 @@ use shakmaty::{uci::Uci, Chess};
 
 use crate::{chess::GameRef, process_log::LogSet};
 
-use self::engine_to_gui::{EngineToGuiPlugin, UciToGui};
+use self::{
+    engine_to_gui::{EngineToGuiPlugin, UciToGui},
+    gui_to_engine::{GuiToEnginePlugin, UciToEngine},
+};
 
 mod engine_to_gui;
+mod gui_to_engine;
 mod uci;
 
 #[derive(Debug, Component)]
@@ -51,7 +55,7 @@ pub struct EnginePlugin;
 
 impl Plugin for EnginePlugin {
     fn build(&self, app: &mut App) {
-        app.add_plugins(EngineToGuiPlugin)
+        app.add_plugins((EngineToGuiPlugin, GuiToEnginePlugin))
             .add_event::<StartEngine>()
             .add_event::<EngineInitialized>()
             .add_event::<SearchMove>()
@@ -80,11 +84,17 @@ fn handle_start_engine(mut start_engine_event: EventReader<StartEngine>, mut com
     }
 }
 
-fn handle_engine_startup(mut state_query: Query<(&mut EngineState, &mut Process), Added<Process>>) {
-    for (mut state, mut process) in state_query.iter_mut() {
+fn handle_engine_startup(
+    mut state_query: Query<(Entity, &mut EngineState), Added<Process>>,
+    mut uci_to_engine_event: EventWriter<UciToEngine>,
+) {
+    for (entity, mut state) in state_query.iter_mut() {
         println!("Initializing UCI...");
-        process.println("uci").expect("Failed to send uci command");
         *state = EngineState::UciInit;
+        uci_to_engine_event.send(UciToEngine {
+            entity,
+            command: uci::UciToEngineCmd::Uci,
+        });
     }
 }
 
@@ -118,24 +128,26 @@ fn handle_engine_to_gui(
 
 fn handle_move_search(
     mut search_move_event: EventReader<SearchMove>,
-    mut engine_query: Query<(&mut Process, &GameRef), With<Engine>>,
+    mut engine_query: Query<(Entity, &GameRef), With<Engine>>,
+    mut uci_to_engine_event: EventWriter<UciToEngine>,
 ) {
     for search_move in search_move_event.read() {
-        if let Some((mut process, _)) = engine_query
+        if let Some((entity, _)) = engine_query
             .iter_mut()
             .find(|(_, game_ref)| search_move.game_ref == **game_ref)
         {
-            let search_time = Duration::from_millis(200);
+            let move_time = Duration::from_millis(200);
 
-            // Search for a fixed time in the current position
-            writeln!(
-                &mut process,
-                "position {}",
-                search_move.game.uci_position_with_moves()
-            )
-            .unwrap();
-            writeln!(&mut process, "go movetime {}", search_time.as_millis()).unwrap();
-            process.flush().unwrap();
+            uci_to_engine_event.send(UciToEngine {
+                entity,
+                command: uci::UciToEngineCmd::Position {
+                    game: Box::new(search_move.game.clone()),
+                },
+            });
+            uci_to_engine_event.send(UciToEngine {
+                entity,
+                command: uci::UciToEngineCmd::Go { move_time },
+            });
         }
     }
 }
