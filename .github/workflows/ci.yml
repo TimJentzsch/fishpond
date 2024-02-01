@@ -12,16 +12,29 @@ env:
   RUSTFLAGS: "-C debuginfo=0 -D warnings"
 
 jobs:
+  cargo-fmt:
+    name: Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - name: Cache Cargo build files
+        uses: Leafwing-Studios/cargo-cache@v1
+      - name: Install alsa and udev
+        run: sudo apt-get update; sudo apt-get install --no-install-recommends libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      - name: Run cargo fmt
+        run: cargo fmt --all --check
+
   cargo-clippy:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          components: rustfmt, clippy
-          override: true
+          components: clippy
       - name: Cache Cargo build files
         uses: Leafwing-Studios/cargo-cache@v1
       - name: Install alsa and udev
@@ -33,11 +46,8 @@ jobs:
     name: Tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
       - name: Cache Cargo build files
         uses: Leafwing-Studios/cargo-cache@v1
       - name: Install alsa and udev
