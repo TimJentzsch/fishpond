@@ -27,6 +27,12 @@ enum EngineState {
     Ready,
 }
 
+#[derive(Debug, Component, Default)]
+struct EngineId {
+    name: Option<String>,
+    author: Option<String>,
+}
+
 #[derive(Debug, Event)]
 pub struct StartEngine {
     pub game_ref: GameRef,
@@ -78,6 +84,7 @@ fn handle_start_engine(mut start_engine_event: EventReader<StartEngine>, mut com
         commands.spawn((
             Engine,
             EngineState::default(),
+            EngineId::default(),
             start_engine.game_ref,
             LocalCommand::new(start_engine.path.clone()),
         ));
@@ -100,12 +107,13 @@ fn handle_engine_startup(
 
 fn handle_engine_to_gui(
     mut uci_to_gui_event: EventReader<UciToGui>,
-    mut state_query: Query<(Entity, &mut EngineState, &GameRef)>,
+    mut state_query: Query<(Entity, &mut EngineState, &mut EngineId, &GameRef)>,
     mut engine_initialized_event: EventWriter<EngineInitialized>,
     mut search_result_event: EventWriter<SearchResult>,
 ) {
     for uci_to_gui in uci_to_gui_event.read() {
-        let Ok((engine_id, mut state, game_ref)) = state_query.get_mut(uci_to_gui.entity) else {
+        let Ok((engine_id, mut state, mut id, game_ref)) = state_query.get_mut(uci_to_gui.entity)
+        else {
             continue;
         };
 
@@ -117,6 +125,15 @@ fn handle_engine_to_gui(
                     engine_id,
                     game_ref: *game_ref,
                 })
+            }
+            uci::UciToGuiCmd::Id { name, author } => {
+                if name.is_some() {
+                    id.name = name.clone();
+                }
+                if author.is_some() {
+                    id.author = author.clone();
+                }
+                println!("Updated engine ID to {id:?}");
             }
             uci::UciToGuiCmd::BestMove { uci_move } => search_result_event.send(SearchResult {
                 game_ref: *game_ref,
