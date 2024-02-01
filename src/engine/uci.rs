@@ -18,7 +18,13 @@ impl Error for UciParseError {}
 #[derive(Debug, Clone)]
 pub enum UciToGuiCmd {
     UciOk,
-    BestMove { uci_move: Uci },
+    Id {
+        name: Option<String>,
+        author: Option<String>,
+    },
+    BestMove {
+        uci_move: Uci,
+    },
 }
 
 impl FromStr for UciToGuiCmd {
@@ -30,6 +36,29 @@ impl FromStr for UciToGuiCmd {
         if let Some(command) = tokens.next() {
             match command {
                 "uciok" => Ok(UciToGuiCmd::UciOk),
+                "id" => {
+                    if let Some(id_type) = tokens.next() {
+                        let rest = tokens.collect::<Vec<_>>().join(" ");
+
+                        if rest.is_empty() {
+                            Err(UciParseError)
+                        } else {
+                            match id_type {
+                                "name" => Ok(UciToGuiCmd::Id {
+                                    name: Some(rest),
+                                    author: None,
+                                }),
+                                "author" => Ok(UciToGuiCmd::Id {
+                                    name: None,
+                                    author: Some(rest),
+                                }),
+                                _ => Err(UciParseError),
+                            }
+                        }
+                    } else {
+                        Err(UciParseError)
+                    }
+                }
                 "bestmove" => {
                     if let Some(uci_str) = tokens.next() {
                         if let Ok(uci_move) = uci_str.parse() {
