@@ -1,14 +1,7 @@
 use std::time::Duration;
 
 use bevy::{app::ScheduleRunnerPlugin, prelude::*};
-use bevy_local_commands::BevyLocalCommandsPlugin;
-use chess::{CreateGame, GamePlugin};
-use engine::EnginePlugin;
-use process_log::ProcessLogPlugin;
-
-mod chess;
-mod engine;
-mod process_log;
+use fishpond_backend::FishpondBackendPlugin;
 
 fn main() {
     App::new()
@@ -17,15 +10,7 @@ fn main() {
                 // Limit to 30 FPS
                 1.0 / 30.0,
             ))),
-            BevyLocalCommandsPlugin,
-            ProcessLogPlugin,
-            EnginePlugin,
-            GamePlugin,
+            FishpondBackendPlugin,
         ))
-        .add_systems(Startup, create_game)
         .run();
-}
-
-fn create_game(mut create_game_event: EventWriter<CreateGame>) {
-    create_game_event.send(CreateGame);
 }
