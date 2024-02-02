@@ -19,3 +19,6 @@ opt-level = 3
 [workspace]
 resolver = "2"
 members = ["crates/*"]
+
+[dev-dependencies]
+rstest = "0.18.2"
