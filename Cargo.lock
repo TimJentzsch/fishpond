@@ -1611,6 +1611,14 @@ name = "fishpond"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "fishpond_backend",
+]
+
+[[package]]
+name = "fishpond_backend"
+version = "0.1.0"
+dependencies = [
+ "bevy",
  "bevy_local_commands",
  "fishpond_game",
  "rstest",
