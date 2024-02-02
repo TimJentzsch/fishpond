@@ -5,7 +5,7 @@ use bevy_ecs::component::Component;
 use shakmaty::{
     fen::Fen,
     zobrist::{Zobrist128, ZobristHash},
-    Color, Move, Position,
+    Chess, Color, Move, Position,
 };
 
 pub mod pgn;
@@ -245,17 +245,27 @@ where
 
     /// The position with move history in UCI notation.
     pub fn uci_position_with_moves(&self) -> String {
-        let uci_start =
+        let start_fen =
             Fen::from_position(self.start_position.clone(), shakmaty::EnPassantMode::Legal);
+        // FEN of the standard starting position
+        let start_pos_fen = Fen::from_position(Chess::new(), shakmaty::EnPassantMode::Legal);
+
+        // Use "startpos" for standard starting position
+        let uci_start = if start_pos_fen == start_fen {
+            "startpos".to_string()
+        } else {
+            format!("fen {}", start_fen)
+        };
+
         let uci_moves: Vec<_> = self
             .moves()
             .map(|r#move| r#move.to_uci(shakmaty::CastlingMode::Standard).to_string())
             .collect();
 
         if uci_moves.is_empty() {
-            format!("fen {uci_start}")
+            uci_start
         } else {
-            format!("fen {uci_start} moves {}", uci_moves.join(" "))
+            format!("{uci_start} moves {}", uci_moves.join(" "))
         }
     }
 

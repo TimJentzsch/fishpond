@@ -15,7 +15,7 @@ impl Display for UciParseError {
 impl Error for UciParseError {}
 
 /// A UCI command sent from the engine to the GUI.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum UciToGuiCmd {
     UciOk,
     Id {
@@ -92,7 +92,30 @@ impl Display for UciToEngineCmd {
             Self::Position { game } => {
                 write!(f, "position {}", game.uci_position_with_moves())
             }
-            Self::Go { move_time } => writeln!(f, "go movetime {}", move_time.as_millis()),
+            Self::Go { move_time } => write!(f, "go movetime {}", move_time.as_millis()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("uciok", UciToGuiCmd::UciOk)]
+    #[case("id name Stockfish 16", UciToGuiCmd::Id { name: Some("Stockfish 16".to_string()), author: None })]
+    #[case("id author the Stockfish developers (see AUTHORS file)", UciToGuiCmd::Id { name: None, author: Some("the Stockfish developers (see AUTHORS file)".to_string()) })]
+    #[case("bestmove e2e4 ponder e7e5", UciToGuiCmd::BestMove { uci_move: Uci::from_str("e2e4").unwrap() })]
+    fn test_uci_to_gui_cmd_valid(#[case] input: &str, #[case] expected: UciToGuiCmd) {
+        assert_eq!(input.parse::<UciToGuiCmd>().unwrap(), expected);
+    }
+
+    #[rstest]
+    #[case(UciToEngineCmd::Uci, "uci")]
+    #[case(UciToEngineCmd::Position { game: Game::from_start_position(Chess::new()).into() }, "position startpos")]
+    #[case(UciToEngineCmd::Go { move_time: Duration::from_millis(1234) }, "go movetime 1234")]
+    fn test_uci_to_engine_cmd_display(#[case] input: UciToEngineCmd, #[case] expected: &str) {
+        assert_eq!(format!("{input}"), expected.to_string());
     }
 }
