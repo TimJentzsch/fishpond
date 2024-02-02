@@ -101,7 +101,6 @@ impl Display for UciToEngineCmd {
 mod tests {
     use super::*;
     use rstest::rstest;
-    use shakmaty::Position;
 
     #[rstest]
     #[case("uciok", UciToGuiCmd::UciOk)]
