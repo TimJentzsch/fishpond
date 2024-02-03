@@ -57,7 +57,7 @@ pub struct CurrentLine {
     line: Vec<Uci>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 pub struct UciInfo {
     /// Search depth in plies.
     depth: Option<usize>,
@@ -121,12 +121,12 @@ pub struct UciInfo {
     /// If there is no refutation for the move found, the line can be empty.
     ///
     /// The engine should only send this if the option `UCI_ShowRefutations` is set to true.
-    refutation: Refutation,
+    refutation: Option<Refutation>,
 
     /// This is the current line the engine is calculating.
     ///
     /// The engine should only send this if the option `UCI_ShowCurrLine` is set to true.
-    current_line: CurrentLine,
+    current_line: Option<CurrentLine>,
 }
 
 /// A UCI command sent from the engine to the GUI.
@@ -175,6 +175,152 @@ impl FromStr for UciToGuiCmd {
                         Err(UciParseError)
                     }
                 }
+                "info" => {
+                    let mut info = UciInfo::default();
+
+                    while let Some(token) = tokens.next() {
+                        match token {
+                            "depth" => {
+                                let Ok(depth) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.depth = Some(depth);
+                            }
+                            "seldepth" => {
+                                let Ok(selective_depth) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.selective_depth = Some(selective_depth);
+                            }
+                            "time" => {
+                                let Ok(millis) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.time = Some(Duration::from_millis(millis));
+                            }
+                            "nodes" => {
+                                let Ok(nodes) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.nodes = Some(nodes);
+                            }
+                            "pv" => {
+                                let Ok(line) = parse_line(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.principal_variation = Some(line);
+                            }
+                            "multipv" => {
+                                let Ok(multi_pv) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.multi_pv = Some(multi_pv);
+                            }
+                            "score" => {
+                                let Some(token) = tokens.next() else {
+                                    return Err(UciParseError);
+                                };
+
+                                let value = match token {
+                                    "cp" => {
+                                        let Ok(centi_pawns) = parse_single(&mut tokens) else {
+                                            return Err(UciParseError);
+                                        };
+                                        ScoreValue::Centipawns(centi_pawns)
+                                    }
+                                    "mate" => {
+                                        let Ok(moves) = parse_single(&mut tokens) else {
+                                            return Err(UciParseError);
+                                        };
+                                        ScoreValue::Mate(moves)
+                                    }
+                                    _ => return Err(UciParseError),
+                                };
+
+                                let mut bound = ScoreBound::Exact;
+
+                                if let Some(token) = tokens.next() {
+                                    match token {
+                                        "lowerbound" => bound = ScoreBound::Lower,
+                                        "upperbound" => bound = ScoreBound::Upper,
+                                        _ => return Err(UciParseError),
+                                    };
+                                }
+
+                                info.score = Some(Score { value, bound });
+                            }
+                            "currmove" => {
+                                let Ok(r#move) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.current_move = Some(r#move);
+                            }
+                            "currmovenumber" => {
+                                let Ok(number) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.current_move_number = Some(number);
+                            }
+                            "hashfull" => {
+                                let Ok(permill) = parse_single::<u16>(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.hash_full = Some(permill as f32 / 1000.0);
+                            }
+                            "nps" => {
+                                let Ok(nodes_per_second) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.nodes_per_second = Some(nodes_per_second);
+                            }
+                            "tbhits" => {
+                                let Ok(table_hits) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.table_hits = Some(table_hits);
+                            }
+                            "sbhits" => {
+                                let Ok(shredder_hits) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.shredder_hits = Some(shredder_hits);
+                            }
+                            "cpuload" => {
+                                let Ok(permill) = parse_single::<u16>(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                info.cpu_load = Some(permill as f32 / 1000.0);
+                            }
+                            "string" => {
+                                let rest = tokens.collect::<Vec<_>>().join(" ");
+                                info.string = Some(rest);
+                                break;
+                            }
+                            "refutation" => {
+                                let Ok(r#move) = parse_single(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+                                let Ok(refutation) = parse_line(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+
+                                info.refutation = Some(Refutation { r#move, refutation })
+                            }
+                            "currentline" => {
+                                let cpu_number = parse_single(&mut tokens).ok();
+                                let Ok(line) = parse_line(&mut tokens) else {
+                                    return Err(UciParseError);
+                                };
+
+                                info.current_line = Some(CurrentLine { cpu_number, line })
+                            }
+                            // Ignore unknown tokens
+                            _ => {}
+                        }
+                    }
+
+                    Ok(UciToGuiCmd::Info(Box::new(info)))
+                }
                 "bestmove" => {
                     if let Some(uci_str) = tokens.next() {
                         if let Ok(uci_move) = uci_str.parse() {
@@ -192,6 +338,26 @@ impl FromStr for UciToGuiCmd {
             Err(UciParseError)
         }
     }
+}
+
+fn parse_single<'a, T: FromStr>(
+    tokens: &mut impl Iterator<Item = &'a str>,
+) -> Result<T, UciParseError> {
+    if let Some(token) = tokens.next() {
+        T::from_str(token).map_err(|_| UciParseError)
+    } else {
+        Err(UciParseError)
+    }
+}
+
+fn parse_line<'a>(tokens: &mut impl Iterator<Item = &'a str>) -> Result<Vec<Uci>, UciParseError> {
+    let mut line = Vec::new();
+
+    while let Ok(uci) = parse_single(tokens) {
+        line.push(uci);
+    }
+
+    Ok(line)
 }
 
 #[derive(Debug, Clone)]
