@@ -135,6 +135,7 @@ fn handle_engine_to_gui(
                 }
                 println!("Updated engine ID to {id:?}");
             }
+            uci::UciToGuiCmd::Info(_) => todo!(),
             uci::UciToGuiCmd::BestMove { uci_move } => search_result_event.send(SearchResult {
                 game_ref: *game_ref,
                 uci_move: uci_move.clone(),
