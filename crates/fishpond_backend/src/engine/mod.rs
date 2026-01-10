@@ -41,6 +41,7 @@ pub struct StartEngine {
 
 #[derive(Debug, Event)]
 pub struct EngineInitialized {
+    #[allow(dead_code)]
     pub engine_id: Entity,
     pub game_ref: GameRef,
 }

@@ -12,8 +12,14 @@ pub struct GameRef {
 
 #[derive(Debug, Component)]
 pub enum GameState {
-    PlayerInitialization { white: bool, black: bool },
-    WaitingForPlayer { player: Color },
+    PlayerInitialization {
+        white: bool,
+        black: bool,
+    },
+    WaitingForPlayer {
+        #[allow(dead_code)]
+        player: Color,
+    },
     Finished,
 }
 
