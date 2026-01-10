@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 bevy.workspace = true
-bevy_local_commands = "0.5"
+bevy_local_commands = "0.7"
 shakmaty.workspace = true
 fishpond_game = { path = "../fishpond_game", features = ["bevy"] }
 
