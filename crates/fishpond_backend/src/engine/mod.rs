@@ -124,7 +124,7 @@ fn handle_engine_to_gui(
                 engine_initialized_event.send(EngineInitialized {
                     engine_id,
                     game_ref: *game_ref,
-                })
+                });
             }
             uci::UciToGuiCmd::Id { name, author } => {
                 if name.is_some() {
@@ -135,10 +135,12 @@ fn handle_engine_to_gui(
                 }
                 println!("Updated engine ID to {id:?}");
             }
-            uci::UciToGuiCmd::BestMove { uci_move } => search_result_event.send(SearchResult {
-                game_ref: *game_ref,
-                uci_move: uci_move.clone(),
-            }),
+            uci::UciToGuiCmd::BestMove { uci_move } => {
+                search_result_event.send(SearchResult {
+                    game_ref: *game_ref,
+                    uci_move: uci_move.clone(),
+                });
+            }
         }
     }
 }
