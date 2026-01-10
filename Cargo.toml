@@ -9,7 +9,7 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
-bevy = "0.13"
+bevy = "0.14"
 rstest = "0.18.2"
 shakmaty = "0.26.0"
 
@@ -18,6 +18,8 @@ shakmaty = "0.26.0"
 [dependencies]
 bevy.workspace = true
 fishpond_backend = { path = "crates/fishpond_backend" }
+# Fix broken compilation with v2.3
+async-channel = "=2.2.0"
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package.bevy]
