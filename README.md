@@ -2,7 +2,7 @@
 
 ![License: AGPL-3.0](https://img.shields.io/github/license/TimJentzsch/fishpond)
 ![CI status](https://img.shields.io/github/actions/workflow/status/TimJentzsch/fishpond/ci.yml?label=CI)
-![Bevy version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FTimJentzsch%2Ffishpond%2Frefs%2Fheads%2Fmain%2FCargo.toml&query=%24.workspace.dependencies.bevy&prefix=v&label=bevy)
+[![Bevy version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2FTimJentzsch%2Ffishpond%2Frefs%2Fheads%2Fmain%2FCargo.toml&query=%24.workspace.dependencies.bevy&prefix=v&label=bevy)](https://bevy.org/)
 
 Fishpond is a chess GUI targeted at chess engine developers.
 
