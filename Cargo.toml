@@ -9,7 +9,7 @@ resolver = "2"
 members = ["crates/*"]
 
 [workspace.dependencies]
-bevy = "0.15"
+bevy = "0.16"
 rstest = "0.18.2"
 shakmaty = "0.26.0"
 
