@@ -23,5 +23,5 @@ impl Plugin for FishpondBackendPlugin {
 }
 
 fn create_game(mut create_game_event: EventWriter<CreateGame>) {
-    create_game_event.send(CreateGame);
+    create_game_event.write(CreateGame);
 }

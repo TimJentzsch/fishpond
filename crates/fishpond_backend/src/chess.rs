@@ -58,14 +58,14 @@ fn handle_game_creation(
             .id();
 
         // Add players
-        start_engine_event.send(StartEngine {
+        start_engine_event.write(StartEngine {
             game_ref: GameRef {
                 game_id,
                 player: Color::White,
             },
             path: "stockfish".to_string(),
         });
-        start_engine_event.send(StartEngine {
+        start_engine_event.write(StartEngine {
             game_ref: GameRef {
                 game_id,
                 player: Color::Black,
@@ -94,7 +94,7 @@ fn handle_engine_startup_engine_initialization(
                     };
 
                     // White moves first
-                    search_move_event.send(SearchMove {
+                    search_move_event.write(SearchMove {
                         game_ref: GameRef {
                             game_id,
                             player: Color::White,
@@ -193,7 +193,7 @@ fn handle_engine_search_result(
                 player: game.turn(),
             };
 
-            search_move_event.send(SearchMove {
+            search_move_event.write(SearchMove {
                 game_ref: GameRef {
                     game_id,
                     player: game.turn(),

@@ -99,7 +99,7 @@ fn handle_engine_startup(
     for (entity, mut state) in state_query.iter_mut() {
         println!("Initializing UCI...");
         *state = EngineState::UciInit;
-        uci_to_engine_event.send(UciToEngine {
+        uci_to_engine_event.write(UciToEngine {
             entity,
             command: uci::UciToEngineCmd::Uci,
         });
@@ -122,7 +122,7 @@ fn handle_engine_to_gui(
             uci::UciToGuiCmd::UciOk => {
                 println!("Engine ready!");
                 *state = EngineState::Ready;
-                engine_initialized_event.send(EngineInitialized {
+                engine_initialized_event.write(EngineInitialized {
                     engine_id,
                     game_ref: *game_ref,
                 });
@@ -137,7 +137,7 @@ fn handle_engine_to_gui(
                 println!("Updated engine ID to {id:?}");
             }
             uci::UciToGuiCmd::BestMove { uci_move } => {
-                search_result_event.send(SearchResult {
+                search_result_event.write(SearchResult {
                     game_ref: *game_ref,
                     uci_move: uci_move.clone(),
                 });
@@ -158,13 +158,13 @@ fn handle_move_search(
         {
             let move_time = Duration::from_millis(200);
 
-            uci_to_engine_event.send(UciToEngine {
+            uci_to_engine_event.write(UciToEngine {
                 entity,
                 command: uci::UciToEngineCmd::Position {
                     game: Box::new(search_move.game.clone()),
                 },
             });
-            uci_to_engine_event.send(UciToEngine {
+            uci_to_engine_event.write(UciToEngine {
                 entity,
                 command: uci::UciToEngineCmd::Go { move_time },
             });

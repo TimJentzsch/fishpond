@@ -26,7 +26,7 @@ fn parse_engine_output(
     for output in output_event.read() {
         for line in output.lines() {
             if let Ok(command) = line.parse::<UciToGuiCmd>() {
-                uci_to_gui_event.send(UciToGui {
+                uci_to_gui_event.write(UciToGui {
                     entity: output.entity,
                     command,
                 });
