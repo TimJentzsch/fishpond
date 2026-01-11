@@ -33,26 +33,26 @@ struct EngineId {
     author: Option<String>,
 }
 
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct StartEngine {
     pub game_ref: GameRef,
     pub path: String,
 }
 
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct EngineInitialized {
     #[allow(dead_code)]
     pub engine_id: Entity,
     pub game_ref: GameRef,
 }
 
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct SearchMove {
     pub game_ref: GameRef,
     pub game: Game<Chess>,
 }
 
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct SearchResult {
     pub game_ref: GameRef,
     pub uci_move: Uci,
@@ -63,10 +63,10 @@ pub struct EnginePlugin;
 impl Plugin for EnginePlugin {
     fn build(&self, app: &mut App) {
         app.add_plugins((EngineToGuiPlugin, GuiToEnginePlugin))
-            .add_event::<StartEngine>()
-            .add_event::<EngineInitialized>()
-            .add_event::<SearchMove>()
-            .add_event::<SearchResult>()
+            .add_message::<StartEngine>()
+            .add_message::<EngineInitialized>()
+            .add_message::<SearchMove>()
+            .add_message::<SearchResult>()
             .add_systems(
                 Update,
                 (
@@ -80,7 +80,7 @@ impl Plugin for EnginePlugin {
     }
 }
 
-fn handle_start_engine(mut start_engine_event: EventReader<StartEngine>, mut commands: Commands) {
+fn handle_start_engine(mut start_engine_event: MessageReader<StartEngine>, mut commands: Commands) {
     for start_engine in start_engine_event.read() {
         commands.spawn((
             Engine,
@@ -94,7 +94,7 @@ fn handle_start_engine(mut start_engine_event: EventReader<StartEngine>, mut com
 
 fn handle_engine_startup(
     mut state_query: Query<(Entity, &mut EngineState), Added<Process>>,
-    mut uci_to_engine_event: EventWriter<UciToEngine>,
+    mut uci_to_engine_event: MessageWriter<UciToEngine>,
 ) {
     for (entity, mut state) in state_query.iter_mut() {
         println!("Initializing UCI...");
@@ -107,10 +107,10 @@ fn handle_engine_startup(
 }
 
 fn handle_engine_to_gui(
-    mut uci_to_gui_event: EventReader<UciToGui>,
+    mut uci_to_gui_event: MessageReader<UciToGui>,
     mut state_query: Query<(Entity, &mut EngineState, &mut EngineId, &GameRef)>,
-    mut engine_initialized_event: EventWriter<EngineInitialized>,
-    mut search_result_event: EventWriter<SearchResult>,
+    mut engine_initialized_event: MessageWriter<EngineInitialized>,
+    mut search_result_event: MessageWriter<SearchResult>,
 ) {
     for uci_to_gui in uci_to_gui_event.read() {
         let Ok((engine_id, mut state, mut id, game_ref)) = state_query.get_mut(uci_to_gui.entity)
@@ -147,9 +147,9 @@ fn handle_engine_to_gui(
 }
 
 fn handle_move_search(
-    mut search_move_event: EventReader<SearchMove>,
+    mut search_move_event: MessageReader<SearchMove>,
     mut engine_query: Query<(Entity, &GameRef), With<Engine>>,
-    mut uci_to_engine_event: EventWriter<UciToEngine>,
+    mut uci_to_engine_event: MessageWriter<UciToEngine>,
 ) {
     for search_move in search_move_event.read() {
         if let Some((entity, _)) = engine_query

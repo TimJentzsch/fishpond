@@ -3,7 +3,7 @@ use bevy_local_commands::ProcessOutput;
 
 use super::uci::UciToGuiCmd;
 
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct UciToGui {
     pub entity: Entity,
     pub command: UciToGuiCmd,
@@ -13,15 +13,15 @@ pub struct EngineToGuiPlugin;
 
 impl Plugin for EngineToGuiPlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_event::<UciToGui>()
+        app.add_message::<UciToGui>()
             .add_systems(Update, parse_engine_output);
     }
 }
 
 /// Read the engine output and parse it to UCI commands.
 fn parse_engine_output(
-    mut output_event: EventReader<ProcessOutput>,
-    mut uci_to_gui_event: EventWriter<UciToGui>,
+    mut output_event: MessageReader<ProcessOutput>,
+    mut uci_to_gui_event: MessageWriter<UciToGui>,
 ) {
     for output in output_event.read() {
         for line in output.lines() {

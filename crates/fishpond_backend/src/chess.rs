@@ -23,14 +23,14 @@ pub enum GameState {
     Finished,
 }
 
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct CreateGame;
 
 pub struct GamePlugin;
 
 impl Plugin for GamePlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<CreateGame>().add_systems(
+        app.add_message::<CreateGame>().add_systems(
             Update,
             (
                 handle_game_creation,
@@ -42,9 +42,9 @@ impl Plugin for GamePlugin {
 }
 
 fn handle_game_creation(
-    mut create_game_event: EventReader<CreateGame>,
+    mut create_game_event: MessageReader<CreateGame>,
     mut commands: Commands,
-    mut start_engine_event: EventWriter<StartEngine>,
+    mut start_engine_event: MessageWriter<StartEngine>,
 ) {
     for _ in create_game_event.read() {
         let game_id = commands
@@ -76,9 +76,9 @@ fn handle_game_creation(
 }
 
 fn handle_engine_startup_engine_initialization(
-    mut engine_initialized_event: EventReader<EngineInitialized>,
+    mut engine_initialized_event: MessageReader<EngineInitialized>,
     mut game_query: Query<(Entity, &mut GameState, &Game<Chess>)>,
-    mut search_move_event: EventWriter<SearchMove>,
+    mut search_move_event: MessageWriter<SearchMove>,
 ) {
     for engine_initialized in engine_initialized_event.read() {
         if let Ok((game_id, mut game_state, game)) =
@@ -113,9 +113,9 @@ fn handle_engine_startup_engine_initialization(
 }
 
 fn handle_engine_search_result(
-    mut search_result_event: EventReader<SearchResult>,
+    mut search_result_event: MessageReader<SearchResult>,
     mut game_query: Query<(Entity, &mut GameState, &mut Game<Chess>)>,
-    mut search_move_event: EventWriter<SearchMove>,
+    mut search_move_event: MessageWriter<SearchMove>,
 ) {
     for search_result in search_result_event.read() {
         if let Ok((game_id, mut game_state, mut game)) =

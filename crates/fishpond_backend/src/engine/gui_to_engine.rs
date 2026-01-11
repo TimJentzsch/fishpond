@@ -5,7 +5,7 @@ use bevy_local_commands::Process;
 
 use super::{uci::UciToEngineCmd, Engine};
 
-#[derive(Debug, Event)]
+#[derive(Debug, Message)]
 pub struct UciToEngine {
     pub entity: Entity,
     pub command: UciToEngineCmd,
@@ -15,14 +15,14 @@ pub struct GuiToEnginePlugin;
 
 impl Plugin for GuiToEnginePlugin {
     fn build(&self, app: &mut bevy::prelude::App) {
-        app.add_event::<UciToEngine>()
+        app.add_message::<UciToEngine>()
             .add_systems(Update, write_gui_commands);
     }
 }
 
 /// Write commands from the GUI in the engine input.
 fn write_gui_commands(
-    mut uci_to_gui_event: EventReader<UciToEngine>,
+    mut uci_to_gui_event: MessageReader<UciToEngine>,
     mut process_query: Query<&mut Process, With<Engine>>,
 ) {
     for message in uci_to_gui_event.read() {
