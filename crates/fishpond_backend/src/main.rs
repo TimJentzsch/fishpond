@@ -26,6 +26,6 @@ fn main() {
         .run();
 }
 
-fn create_game(mut create_game_event: EventWriter<CreateGame>) {
+fn create_game(mut create_game_event: MessageWriter<CreateGame>) {
     create_game_event.write(CreateGame);
 }

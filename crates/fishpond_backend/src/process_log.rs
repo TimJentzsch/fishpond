@@ -12,13 +12,13 @@ impl Plugin for ProcessLogPlugin {
     }
 }
 
-fn log_output(mut output_event: EventReader<ProcessOutput>) {
+fn log_output(mut output_event: MessageReader<ProcessOutput>) {
     for output in output_event.read() {
         println!("{}", output.all());
     }
 }
 
-fn log_errors(mut error_event: EventReader<ProcessError>) {
+fn log_errors(mut error_event: MessageReader<ProcessError>) {
     for error in error_event.read() {
         eprintln!("{error:?}");
     }
