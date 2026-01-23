@@ -10,4 +10,4 @@ bevy = ["bevy_ecs"]
 
 [dependencies]
 shakmaty = "0.26.0"
-bevy_ecs = { version = "0.17", optional = true }
+bevy_ecs = { version = "0.18", optional = true }
