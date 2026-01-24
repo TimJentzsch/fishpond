@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use shakmaty::{san::San, Position};
 
-use crate::Game;
+use crate::game::Game;
 
 /// Portable game notation (PGN) to record an entire chess game.
 pub struct Pgn<P: Position> {

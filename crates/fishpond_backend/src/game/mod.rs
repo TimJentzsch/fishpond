@@ -1,7 +1,6 @@
 use std::{error::Error, fmt::Display};
 
-#[cfg(feature = "bevy")]
-use bevy_ecs::component::Component;
+use bevy::prelude::*;
 use shakmaty::{
     fen::Fen,
     zobrist::{Zobrist128, ZobristHash},
@@ -90,8 +89,7 @@ impl From<Outcome> for shakmaty::Outcome {
     }
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "bevy", derive(Component))]
+#[derive(Debug, Clone, Component)]
 pub struct Game<P>
 where
     P: Position,
@@ -120,17 +118,8 @@ pub enum Action {
     /// This must be a valid move in the current position.
     Move(Move),
 
-    /// The given color offers the opponent a draw.
-    OfferDraw(Color),
-
-    /// The opponent accepted the previously offered draw.
-    AcceptDraw,
-
     /// A draw is declared by a player.
     DeclareDraw(DeclareDrawReason),
-
-    /// The given color resigns the game.
-    Resign(Color),
 }
 
 /// The action is invalid in this position
@@ -169,11 +158,6 @@ where
         &self.current_position
     }
 
-    /// All actions which happened in the game.
-    pub fn actions(&self) -> &[Action] {
-        &self.actions
-    }
-
     /// An iterator over all moves played in the game.
     pub fn moves(&self) -> impl Iterator<Item = &Move> {
         self.actions.iter().filter_map(|action| {
@@ -183,64 +167,6 @@ where
                 None
             }
         })
-    }
-
-    /// Offer a draw to the opponent.
-    /// `color` is the player who offered the draw.
-    ///
-    /// The draw must accepted before the opponent moves.
-    ///
-    /// If the game is already over, [`Err`] is returned.
-    pub fn offer_draw(&mut self, color: Color) -> Result<(), InvalidAction> {
-        if self.outcome().is_some() {
-            Err(InvalidAction)
-        } else {
-            self.actions.push(Action::OfferDraw(color));
-            Ok(())
-        }
-    }
-
-    /// Accept a draw offer from the opponent.
-    ///
-    /// The opponent must have offered a draw first, otherwise [`Err`] is returned.
-    pub fn accept_draw(&mut self) -> Result<(), InvalidAction> {
-        if self.outcome().is_some() {
-            return Err(InvalidAction);
-        }
-
-        let mut iter = self.actions.iter().rev();
-
-        if let Some(last) = iter.next() {
-            match last {
-                Action::OfferDraw(_) => {
-                    self.actions.push(Action::AcceptDraw);
-                    Ok(())
-                }
-                Action::Move(_) => {
-                    if Some(&Action::OfferDraw(self.turn().other())) == iter.next() {
-                        self.actions.push(Action::AcceptDraw);
-                        Ok(())
-                    } else {
-                        Err(InvalidAction)
-                    }
-                }
-                _ => Err(InvalidAction),
-            }
-        } else {
-            Err(InvalidAction)
-        }
-    }
-
-    /// `color` resigns the game.
-    ///
-    /// Returns [`Err`] if the game is already over.
-    pub fn resign(&mut self, color: Color) -> Result<(), InvalidAction> {
-        if self.outcome().is_some() {
-            Err(InvalidAction)
-        } else {
-            self.actions.push(Action::Resign(color));
-            Ok(())
-        }
     }
 
     /// The position with move history in UCI notation.
@@ -372,15 +298,6 @@ where
         } else {
             // Check if a player action ended the game
             match self.actions.last() {
-                // Resigned
-                Some(Action::Resign(color)) => Some(Outcome::Decisive {
-                    winner: color.other(),
-                    reason: DecisiveReason::Resigned,
-                }),
-                // Draw by agreement
-                Some(Action::AcceptDraw) => Some(Outcome::Draw {
-                    reason: DrawReason::MutualAgreement,
-                }),
                 // Draw declared
                 Some(Action::DeclareDraw(reason)) => Some(Outcome::Draw {
                     reason: DrawReason::Declared(*reason),
