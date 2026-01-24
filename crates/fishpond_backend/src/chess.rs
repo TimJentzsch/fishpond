@@ -1,5 +1,5 @@
+use crate::game::{pgn::Pgn, DeclareDrawReason, Game, Outcome};
 use bevy::prelude::*;
-use fishpond_game::{pgn::Pgn, DeclareDrawReason, Game, Outcome};
 use shakmaty::{fen::Fen, Chess, Color, Position};
 
 use crate::engine::{EngineInitialized, SearchMove, SearchResult, StartEngine};

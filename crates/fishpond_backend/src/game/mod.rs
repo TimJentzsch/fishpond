@@ -1,7 +1,6 @@
 use std::{error::Error, fmt::Display};
 
-#[cfg(feature = "bevy")]
-use bevy_ecs::component::Component;
+use bevy::prelude::*;
 use shakmaty::{
     fen::Fen,
     zobrist::{Zobrist128, ZobristHash},
@@ -90,8 +89,7 @@ impl From<Outcome> for shakmaty::Outcome {
     }
 }
 
-#[derive(Debug, Clone)]
-#[cfg_attr(feature = "bevy", derive(Component))]
+#[derive(Debug, Clone, Component)]
 pub struct Game<P>
 where
     P: Position,

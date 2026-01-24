@@ -1,6 +1,6 @@
 use std::{error::Error, fmt::Display, str::FromStr, time::Duration};
 
-use fishpond_game::Game;
+use crate::game::Game;
 use shakmaty::{uci::Uci, Chess};
 
 #[derive(Debug)]

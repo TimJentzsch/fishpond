@@ -2345,16 +2345,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "bevy_local_commands",
- "fishpond_game",
  "rstest",
- "shakmaty",
-]
-
-[[package]]
-name = "fishpond_game"
-version = "0.1.0"
-dependencies = [
- "bevy_ecs",
  "shakmaty",
 ]
 

@@ -1,8 +1,8 @@
 use std::time::Duration;
 
+use crate::game::Game;
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process};
-use fishpond_game::Game;
 use shakmaty::{uci::Uci, Chess};
 
 use crate::{chess::GameRef, process_log::LogSet};
