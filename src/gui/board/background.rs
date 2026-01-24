@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-pub fn spawn_board(mut commands: Commands) {
+pub fn spawn_background(mut commands: Commands) {
     commands
         .spawn(Node {
             display: Display::Grid,

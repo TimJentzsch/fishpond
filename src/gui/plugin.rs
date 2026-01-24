@@ -1,12 +1,12 @@
 use bevy::prelude::*;
 
-use crate::gui::board::spawn_board;
+use crate::gui::board::BoardPlugin;
 
 pub struct GuiPlugin;
 
 impl Plugin for GuiPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, (setup, spawn_board));
+        app.add_plugins(BoardPlugin).add_systems(Startup, setup);
     }
 }
 
