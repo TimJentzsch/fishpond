@@ -6,7 +6,7 @@ use process_log::ProcessLogPlugin;
 
 mod chess;
 mod engine;
-mod game;
+pub mod game;
 mod process_log;
 
 pub struct FishpondBackendPlugin;

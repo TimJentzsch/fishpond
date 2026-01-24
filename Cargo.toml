@@ -16,8 +16,9 @@ shakmaty = "0.26.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy.workspace = true
+bevy = { workspace = true, features = ["debug"] }
 fishpond_backend = { path = "crates/fishpond_backend" }
+shakmaty.workspace = true
 
 # Enable high optimizations for dependencies (incl. Bevy), but not for our code:
 [profile.dev.package.bevy]

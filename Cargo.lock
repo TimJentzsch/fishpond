@@ -2337,6 +2337,7 @@ version = "0.1.0"
 dependencies = [
  "bevy",
  "fishpond_backend",
+ "shakmaty",
 ]
 
 [[package]]
