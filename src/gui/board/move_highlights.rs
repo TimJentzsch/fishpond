@@ -2,6 +2,8 @@ use bevy::prelude::*;
 use fishpond_backend::game::Game;
 use shakmaty::Chess;
 
+use crate::gui::board::position::{set_square_position, SQUARE_PERCENT};
+
 #[derive(Component)]
 pub struct SourceSquare;
 
@@ -16,8 +18,8 @@ pub fn spawn_move_highlights(commands: &mut EntityCommands) {
         builder.spawn((
             SourceSquare,
             Node {
-                height: percent(100.0 / 8.0),
-                width: percent(100.0 / 8.0),
+                height: percent(SQUARE_PERCENT),
+                width: percent(SQUARE_PERCENT),
                 position_type: PositionType::Absolute,
                 top: percent(0.0),
                 left: percent(0.0),
@@ -30,8 +32,8 @@ pub fn spawn_move_highlights(commands: &mut EntityCommands) {
         builder.spawn((
             TargetSquare,
             Node {
-                height: percent(100.0 / 8.0),
-                width: percent(100.0 / 8.0),
+                height: percent(SQUARE_PERCENT),
+                width: percent(SQUARE_PERCENT),
                 position_type: PositionType::Absolute,
                 top: percent(0.0),
                 left: percent(0.0),
@@ -60,10 +62,7 @@ pub fn update_move_highlights(
 
     if let Some(last_move) = game.moves().last() {
         if let Some(from) = last_move.from() {
-            let (file, rank) = from.coords();
-
-            source_query.1.left = percent(file as u8 as f32 * 12.5);
-            source_query.1.top = percent((7 - rank as u8) as f32 * 12.5);
+            set_square_position(&mut source_query.1, from);
 
             if from.is_light() {
                 source_query.0 .0 = LIGHT_HIGHLIGHT_COLOR;
@@ -76,10 +75,7 @@ pub fn update_move_highlights(
         }
 
         let to = last_move.to();
-
-        let (file, rank) = to.coords();
-        target_query.1.left = percent(file as u8 as f32 * 12.5);
-        target_query.1.top = percent((7 - rank as u8) as f32 * 12.5);
+        set_square_position(&mut target_query.1, to);
 
         if to.is_light() {
             target_query.0 .0 = LIGHT_HIGHLIGHT_COLOR;
