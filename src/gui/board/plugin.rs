@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::gui::board::{background::spawn_background, move_highlight::update_move_highlights};
+use crate::gui::board::{background::spawn_background, move_highlights::update_move_highlights};
 
 pub struct BoardPlugin;
 

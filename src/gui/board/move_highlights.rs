@@ -11,7 +11,7 @@ pub struct TargetSquare;
 const LIGHT_HIGHLIGHT_COLOR: Color = Color::srgb_u8(205, 209, 106);
 const DARK_HIGHLIGHT_COLOR: Color = Color::srgb_u8(170, 162, 58);
 
-pub fn spawn_move_highlight(commands: &mut EntityCommands) {
+pub fn spawn_move_highlights(commands: &mut EntityCommands) {
     commands.with_children(|builder| {
         builder.spawn((
             SourceSquare,

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::gui::board::move_highlight::spawn_move_highlight;
+use crate::gui::board::move_highlights::spawn_move_highlights;
 
 const LIGHT_SQUARE_COLOR: Color = Color::srgb_u8(240, 217, 181);
 const DARK_SQUARE_COLOR: Color = Color::srgb_u8(181, 136, 99);
@@ -30,5 +30,5 @@ pub fn spawn_background(mut commands: Commands) {
             }
         }
     });
-    spawn_move_highlight(&mut board_commands);
+    spawn_move_highlights(&mut board_commands);
 }
