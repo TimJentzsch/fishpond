@@ -2,13 +2,19 @@ use bevy::prelude::*;
 use fishpond_backend::game::Game;
 use shakmaty::{Chess, Position, Square};
 
-use crate::gui::board::position::SQUARE_PERCENT;
+use crate::gui::board::position::{SQUARE_PERCENT, set_square_position};
 
 #[derive(Component)]
 pub struct PieceContainer;
 
 #[derive(Component)]
 pub struct RenderedPosition(Chess);
+
+#[derive(Component)]
+pub struct RenderedPiece {
+    pub square: Square,
+    pub piece: shakmaty::Piece,
+}
 
 pub fn spawn_pieces(commands: &mut EntityCommands) {
     commands.with_child((
@@ -26,6 +32,7 @@ pub fn update_pieces(
     mut commands: Commands,
     game_query: Query<&Game<Chess>>,
     mut piece_container_query: Query<(Entity, Option<&mut RenderedPosition>), With<PieceContainer>>,
+    mut piece_query: Query<(&mut Node, &mut RenderedPiece)>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok(game) = game_query.single() else {
@@ -40,6 +47,36 @@ pub fn update_pieces(
             // No change in position, no need to update pieces
             return;
         } else {
+            let last_move = game.moves().last();
+            if let Some(last_move) = last_move
+                && let Ok(compare_position) = visualized_position.0.clone().play(last_move)
+                && compare_position == *game.current_position()
+            {
+                visualized_position.0 = game.current_position().clone();
+
+                // Only the last move has to be applied
+                if let shakmaty::Move::Normal {
+                    role,
+                    from,
+                    capture,
+                    to,
+                    promotion,
+                } = *last_move
+                    && capture.is_none()
+                    && promotion.is_none()
+                {
+                    // Try to find the matching piece
+                    for (mut node, mut rendered_piece) in piece_query.iter_mut() {
+                        if rendered_piece.square == from && rendered_piece.piece.role == role {
+                            // Move the piece to the new square
+                            rendered_piece.square = to;
+                            set_square_position(&mut node, to);
+                            println!("---- EFFICIENT UPDATE ----");
+                            return;
+                        }
+                    }
+                }
+            }
             visualized_position.0 = game.current_position().clone();
         }
     } else {
@@ -47,8 +84,9 @@ pub fn update_pieces(
             .entity(container)
             .insert(RenderedPosition(game.current_position().clone()));
     }
-
     let mut container_commands = commands.entity(container);
+
+    println!("---- INEFFICIENT UPDATE ----");
 
     // Clear existing pieces
     container_commands.despawn_children();
@@ -76,11 +114,12 @@ pub fn update_pieces(
                 position_type: PositionType::Absolute,
                 ..default()
             };
-            crate::gui::board::position::set_square_position(&mut piece_node, square);
+            set_square_position(&mut piece_node, square);
 
             container_commands.with_children(|builder| {
                 builder.spawn((
                     piece_node,
+                    RenderedPiece { square, piece },
                     ImageNode::new(asset_server.load(piece_image_path)),
                 ));
             });
