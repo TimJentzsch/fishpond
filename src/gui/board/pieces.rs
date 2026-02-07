@@ -51,7 +51,7 @@ pub fn update_pieces(
                 shakmaty::Role::Queen => "Q",
                 shakmaty::Role::King => "K",
             };
-            let piece_image_path = format!("pieces/cburnett/{piece_color}{piece_type}.png");
+            let piece_image_path = format!("pieces/cburnett/{piece_color}{piece_type}.svg");
 
             let mut piece_node = Node {
                 width: percent(SQUARE_PERCENT),
@@ -62,7 +62,11 @@ pub fn update_pieces(
             crate::gui::board::position::set_square_position(&mut piece_node, square);
 
             container_commands.with_children(|builder| {
-                builder.spawn((piece_node, UiVelloSvg(asset_server.load(piece_image_path))));
+                builder.spawn((
+                    piece_node,
+                    UiVelloSvg(asset_server.load(piece_image_path)),
+                    GlobalZIndex(5),
+                ));
             });
         }
     }
