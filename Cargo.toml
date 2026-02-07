@@ -17,6 +17,7 @@ shakmaty = "0.26.0"
 
 [dependencies]
 bevy.workspace = true
+bevy_vello = { version = "0.13.1", features = ["svg"] }
 fishpond_backend = { path = "crates/fishpond_backend" }
 shakmaty.workspace = true
 
