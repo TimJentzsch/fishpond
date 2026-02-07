@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy_vello::prelude::UiVelloSvg;
 use fishpond_backend::game::Game;
 use shakmaty::{Chess, Position, Square};
 
@@ -61,10 +62,7 @@ pub fn update_pieces(
             crate::gui::board::position::set_square_position(&mut piece_node, square);
 
             container_commands.with_children(|builder| {
-                builder.spawn((
-                    piece_node,
-                    ImageNode::new(asset_server.load(piece_image_path)),
-                ));
+                builder.spawn((piece_node, UiVelloSvg(asset_server.load(piece_image_path))));
             });
         }
     }
