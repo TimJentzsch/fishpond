@@ -7,6 +7,9 @@ use crate::gui::board::position::SQUARE_PERCENT;
 #[derive(Component)]
 pub struct PieceContainer;
 
+#[derive(Component)]
+pub struct RenderedPosition(Chess);
+
 pub fn spawn_pieces(commands: &mut EntityCommands) {
     commands.with_child((
         PieceContainer,
@@ -22,14 +25,29 @@ pub fn spawn_pieces(commands: &mut EntityCommands) {
 pub fn update_pieces(
     mut commands: Commands,
     game_query: Query<&Game<Chess>>,
-    piece_container_query: Single<Entity, With<PieceContainer>>,
+    mut piece_container_query: Query<(Entity, Option<&mut RenderedPosition>), With<PieceContainer>>,
     asset_server: Res<AssetServer>,
 ) {
     let Ok(game) = game_query.single() else {
         return;
     };
+    let Ok((container, mut visualized_position)) = piece_container_query.single_mut() else {
+        return;
+    };
 
-    let container = *piece_container_query;
+    if let Some(visualized_position) = &mut visualized_position {
+        if visualized_position.0 == *game.current_position() {
+            // No change in position, no need to update pieces
+            return;
+        } else {
+            visualized_position.0 = game.current_position().clone();
+        }
+    } else {
+        commands
+            .entity(container)
+            .insert(RenderedPosition(game.current_position().clone()));
+    }
+
     let mut container_commands = commands.entity(container);
 
     // Clear existing pieces
