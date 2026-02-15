@@ -95,22 +95,8 @@ pub fn update_pieces(
                     if let Some(promotion) = promotion {
                         rendered_piece.piece.role = promotion;
 
-                        // Update the piece image
-                        let piece_color = match rendered_piece.piece.color {
-                            shakmaty::Color::White => "w",
-                            shakmaty::Color::Black => "b",
-                        };
-                        let piece_type = match promotion {
-                            shakmaty::Role::Pawn => "P",
-                            shakmaty::Role::Knight => "N",
-                            shakmaty::Role::Bishop => "B",
-                            shakmaty::Role::Rook => "R",
-                            shakmaty::Role::Queen => "Q",
-                            shakmaty::Role::King => "K",
-                        };
-                        let piece_image_path =
-                            format!("pieces/cburnett/{piece_color}{piece_type}.png");
-                        image_node.image = asset_server.load(piece_image_path);
+                        image_node.image =
+                            asset_server.load(piece_image_path(&rendered_piece.piece));
                     }
                 }
 
@@ -145,20 +131,6 @@ pub fn update_pieces(
     // Spawn pieces based on the current game state
     for square in Square::ALL {
         if let Some(piece) = game.current_position().board().piece_at(square) {
-            let piece_color = match piece.color {
-                shakmaty::Color::White => "w",
-                shakmaty::Color::Black => "b",
-            };
-            let piece_type = match piece.role {
-                shakmaty::Role::Pawn => "P",
-                shakmaty::Role::Knight => "N",
-                shakmaty::Role::Bishop => "B",
-                shakmaty::Role::Rook => "R",
-                shakmaty::Role::Queen => "Q",
-                shakmaty::Role::King => "K",
-            };
-            let piece_image_path = format!("pieces/cburnett/{piece_color}{piece_type}.png");
-
             let mut piece_node = Node {
                 width: percent(SQUARE_PERCENT),
                 height: percent(SQUARE_PERCENT),
@@ -171,11 +143,27 @@ pub fn update_pieces(
                 builder.spawn((
                     piece_node,
                     RenderedPiece { square, piece },
-                    ImageNode::new(asset_server.load(piece_image_path)),
+                    ImageNode::new(asset_server.load(piece_image_path(&piece))),
                 ));
             });
         }
     }
 
     Ok(())
+}
+
+fn piece_image_path(piece: &shakmaty::Piece) -> String {
+    let piece_color = match piece.color {
+        shakmaty::Color::White => "w",
+        shakmaty::Color::Black => "b",
+    };
+    let piece_type = match piece.role {
+        shakmaty::Role::Pawn => "P",
+        shakmaty::Role::Knight => "N",
+        shakmaty::Role::Bishop => "B",
+        shakmaty::Role::Rook => "R",
+        shakmaty::Role::Queen => "Q",
+        shakmaty::Role::King => "K",
+    };
+    format!("pieces/cburnett/{piece_color}{piece_type}.png")
 }
