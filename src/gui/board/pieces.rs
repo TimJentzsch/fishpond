@@ -1,6 +1,8 @@
 use bevy::prelude::*;
 use fishpond_backend::game::Game;
 use shakmaty::{Chess, Position, Square};
+use std::error::Error;
+use std::fmt::Display;
 
 use crate::gui::board::position::{SQUARE_PERCENT, set_square_position};
 
@@ -28,106 +30,114 @@ pub fn spawn_pieces(commands: &mut EntityCommands) {
     ));
 }
 
+#[derive(Debug)]
+enum PieceUpdateError {
+    MovingPieceNotFound,
+    CapturedPieceNotFound,
+}
+
+impl Display for PieceUpdateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            PieceUpdateError::MovingPieceNotFound => write!(f, "piece to move not found"),
+            PieceUpdateError::CapturedPieceNotFound => write!(f, "captured piece not found"),
+        }
+    }
+}
+
+impl Error for PieceUpdateError {}
+
 pub fn update_pieces(
     mut commands: Commands,
     game_query: Query<&Game<Chess>>,
     mut piece_container_query: Query<(Entity, Option<&mut RenderedPosition>), With<PieceContainer>>,
     mut piece_query: Query<(Entity, &mut Node, &mut ImageNode, &mut RenderedPiece)>,
     asset_server: Res<AssetServer>,
-) {
-    let Ok(game) = game_query.single() else {
-        return;
-    };
-    let Ok((container, mut visualized_position)) = piece_container_query.single_mut() else {
-        return;
-    };
+) -> Result<(), BevyError> {
+    let game = game_query.single()?;
+    let (container, mut visualized_position) = piece_container_query.single_mut()?;
 
     if let Some(visualized_position) = &mut visualized_position {
         if visualized_position.0 == *game.current_position() {
             // No change in position, no need to update pieces
-            return;
-        } else {
-            let last_move = game.moves().last();
-            if let Some(last_move) = last_move
-                && let Ok(compare_position) = visualized_position.0.clone().play(last_move)
-                && compare_position == *game.current_position()
-            {
-                visualized_position.0 = game.current_position().clone();
-
-                // Only the last move has to be applied
-                if let shakmaty::Move::Normal {
-                    role,
-                    from,
-                    capture,
-                    to,
-                    promotion,
-                } = *last_move
-                    && promotion.is_none()
-                {
-                    let Some((_, mut node, mut image_node, mut rendered_piece)) =
-                        piece_query.iter_mut().find(|(_, _, _, rendered_piece)| {
-                            rendered_piece.square == from && rendered_piece.piece.role == role
-                        })
-                    else {
-                        println!("---- PIECE NOT FOUND ----");
-                        return;
-                    };
-
-                    if rendered_piece.square == from && rendered_piece.piece.role == role {
-                        // Move the piece to the new square
-                        rendered_piece.square = to;
-                        set_square_position(&mut node, to);
-
-                        if let Some(promotion) = promotion {
-                            rendered_piece.piece.role = promotion;
-
-                            // Update the piece image
-                            let piece_color = match rendered_piece.piece.color {
-                                shakmaty::Color::White => "w",
-                                shakmaty::Color::Black => "b",
-                            };
-                            let piece_type = match promotion {
-                                shakmaty::Role::Pawn => "P",
-                                shakmaty::Role::Knight => "N",
-                                shakmaty::Role::Bishop => "B",
-                                shakmaty::Role::Rook => "R",
-                                shakmaty::Role::Queen => "Q",
-                                shakmaty::Role::King => "K",
-                            };
-                            let piece_image_path =
-                                format!("pieces/cburnett/{piece_color}{piece_type}.png");
-                            image_node.image = asset_server.load(piece_image_path);
-                        }
-                    }
-
-                    if let Some(capture) = capture {
-                        // Remove the captured piece
-                        let Some((captured_entity, _, _, _)) =
-                            piece_query.iter_mut().find(|(_, _, _, rendered_piece)| {
-                                rendered_piece.square == to && rendered_piece.piece.role == capture
-                            })
-                        else {
-                            println!("---- CAPTURED PIECE NOT FOUND ----");
-                            return;
-                        };
-
-                        commands.entity(captured_entity).despawn();
-                    }
-
-                    println!("---- EFFICIENT UPDATE ----");
-                    return;
-                }
-            }
-            visualized_position.0 = game.current_position().clone();
+            return Ok(());
         }
+
+        let last_move = game.moves().last();
+        if let Some(last_move) = last_move
+            && let Ok(compare_position) = visualized_position.0.clone().play(last_move)
+            && compare_position == *game.current_position()
+        {
+            visualized_position.0 = game.current_position().clone();
+
+            // Only the last move has to be applied
+            if let shakmaty::Move::Normal {
+                role,
+                from,
+                capture,
+                to,
+                promotion,
+            } = *last_move
+                && promotion.is_none()
+            {
+                let (_, mut node, mut image_node, mut rendered_piece) = piece_query
+                    .iter_mut()
+                    .find(|(_, _, _, rendered_piece)| {
+                        rendered_piece.square == from && rendered_piece.piece.role == role
+                    })
+                    .ok_or(PieceUpdateError::MovingPieceNotFound)?;
+
+                if rendered_piece.square == from && rendered_piece.piece.role == role {
+                    // Move the piece to the new square
+                    rendered_piece.square = to;
+                    set_square_position(&mut node, to);
+
+                    if let Some(promotion) = promotion {
+                        rendered_piece.piece.role = promotion;
+
+                        // Update the piece image
+                        let piece_color = match rendered_piece.piece.color {
+                            shakmaty::Color::White => "w",
+                            shakmaty::Color::Black => "b",
+                        };
+                        let piece_type = match promotion {
+                            shakmaty::Role::Pawn => "P",
+                            shakmaty::Role::Knight => "N",
+                            shakmaty::Role::Bishop => "B",
+                            shakmaty::Role::Rook => "R",
+                            shakmaty::Role::Queen => "Q",
+                            shakmaty::Role::King => "K",
+                        };
+                        let piece_image_path =
+                            format!("pieces/cburnett/{piece_color}{piece_type}.png");
+                        image_node.image = asset_server.load(piece_image_path);
+                    }
+                }
+
+                if let Some(capture) = capture {
+                    // Remove the captured piece
+                    let (captured_entity, _, _, _) = piece_query
+                        .iter_mut()
+                        .find(|(_, _, _, rendered_piece)| {
+                            rendered_piece.square == to && rendered_piece.piece.role == capture
+                        })
+                        .ok_or(PieceUpdateError::CapturedPieceNotFound)?;
+
+                    commands.entity(captured_entity).despawn();
+                }
+
+                return Ok(());
+            }
+        }
+
+        visualized_position.0 = game.current_position().clone();
     } else {
         commands
             .entity(container)
             .insert(RenderedPosition(game.current_position().clone()));
     }
-    let mut container_commands = commands.entity(container);
 
-    println!("---- INEFFICIENT UPDATE ----");
+    let mut container_commands = commands.entity(container);
 
     // Clear existing pieces
     container_commands.despawn_children();
@@ -166,4 +176,6 @@ pub fn update_pieces(
             });
         }
     }
+
+    Ok(())
 }
