@@ -8,7 +8,10 @@ pub struct ProcessLogPlugin;
 
 impl Plugin for ProcessLogPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (log_output, log_errors).in_set(LogSet));
+        app.add_systems(
+            Update,
+            (log_output.run_if(|| false), log_errors).in_set(LogSet),
+        );
     }
 }
 
