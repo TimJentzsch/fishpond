@@ -52,10 +52,12 @@ pub fn update_pieces(
     mut commands: Commands,
     game_query: Query<&Game<Chess>>,
     mut piece_container_query: Query<(Entity, Option<&mut RenderedPosition>), With<PieceContainer>>,
-    mut piece_query: Query<(Entity, &mut Node, &mut ImageNode, &mut RenderedPiece)>,
+    mut piece_query: Query<(Entity, &mut Node, &mut UiVelloSvg, &mut RenderedPiece)>,
     asset_server: Res<AssetServer>,
 ) -> Result<(), BevyError> {
-    let game = game_query.single()?;
+    let Ok(game) = game_query.single() else {
+        return Ok(());
+    };
     let (container, mut visualized_position) = piece_container_query.single_mut()?;
 
     if let Some(visualized_position) = &mut visualized_position {
@@ -81,7 +83,7 @@ pub fn update_pieces(
             } = *last_move
                 && promotion.is_none()
             {
-                let (_, mut node, mut image_node, mut rendered_piece) = piece_query
+                let (_, mut node, mut svg, mut rendered_piece) = piece_query
                     .iter_mut()
                     .find(|(_, _, _, rendered_piece)| {
                         rendered_piece.square == from && rendered_piece.piece.role == role
@@ -96,8 +98,7 @@ pub fn update_pieces(
                     if let Some(promotion) = promotion {
                         rendered_piece.piece.role = promotion;
 
-                        image_node.image =
-                            asset_server.load(piece_image_path(&rendered_piece.piece));
+                        svg.0 = asset_server.load(piece_image_path(&rendered_piece.piece));
                     }
                 }
 
