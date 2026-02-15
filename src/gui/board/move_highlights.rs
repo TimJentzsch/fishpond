@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use fishpond_backend::game::Game;
 use shakmaty::Chess;
 
-use crate::gui::board::position::{set_square_position, SQUARE_PERCENT};
+use crate::gui::board::position::{SQUARE_PERCENT, set_square_position};
 
 #[derive(Component)]
 pub struct SourceSquare;
@@ -65,9 +65,9 @@ pub fn update_move_highlights(
             set_square_position(&mut source_query.1, from);
 
             if from.is_light() {
-                source_query.0 .0 = LIGHT_HIGHLIGHT_COLOR;
+                source_query.0.0 = LIGHT_HIGHLIGHT_COLOR;
             } else {
-                source_query.0 .0 = DARK_HIGHLIGHT_COLOR;
+                source_query.0.0 = DARK_HIGHLIGHT_COLOR;
             }
             *source_query.2 = Visibility::Visible;
         } else {
@@ -78,9 +78,9 @@ pub fn update_move_highlights(
         set_square_position(&mut target_query.1, to);
 
         if to.is_light() {
-            target_query.0 .0 = LIGHT_HIGHLIGHT_COLOR;
+            target_query.0.0 = LIGHT_HIGHLIGHT_COLOR;
         } else {
-            target_query.0 .0 = DARK_HIGHLIGHT_COLOR;
+            target_query.0.0 = DARK_HIGHLIGHT_COLOR;
         }
         *target_query.2 = Visibility::Visible;
     } else {
