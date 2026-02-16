@@ -1,11 +1,7 @@
 use std::{error::Error, fmt::Display};
 
 use bevy::prelude::*;
-use shakmaty::{
-    fen::Fen,
-    zobrist::{Zobrist128, ZobristHash},
-    Chess, Color, Move, Position,
-};
+use shakmaty::{fen::Fen, zobrist::Zobrist128, Chess, Color, KnownOutcome, Move, Position};
 
 pub mod pgn;
 
@@ -83,8 +79,10 @@ pub enum Outcome {
 impl From<Outcome> for shakmaty::Outcome {
     fn from(value: Outcome) -> Self {
         match value {
-            Outcome::Decisive { winner, reason: _ } => shakmaty::Outcome::Decisive { winner },
-            Outcome::Draw { reason: _ } => shakmaty::Outcome::Draw,
+            Outcome::Decisive { winner, reason: _ } => {
+                shakmaty::Outcome::Known(KnownOutcome::Decisive { winner })
+            }
+            Outcome::Draw { reason: _ } => shakmaty::Outcome::Known(KnownOutcome::Draw),
         }
     }
 }
@@ -196,7 +194,7 @@ where
 
     /// Determine if a draw can be declared.
     pub fn can_declare_draw(&self) -> Option<DeclareDrawReason> {
-        if self.outcome().is_some() {
+        if self.outcome().is_known() {
             return None;
         }
 
@@ -264,15 +262,15 @@ where
     ///
     /// Returns [`None`] if the game is still ongoing.
     pub fn game_outcome(&self) -> Option<Outcome> {
-        if let Some(variant_outcome) = self.variant_outcome() {
+        if let Some(variant_outcome) = self.variant_outcome().known() {
             // An outcome determined by the variant
             // Just needs to be converted and the variant reason attached
             Some(match variant_outcome {
-                shakmaty::Outcome::Decisive { winner } => Outcome::Decisive {
+                KnownOutcome::Decisive { winner } => Outcome::Decisive {
                     winner,
                     reason: DecisiveReason::Variant,
                 },
-                shakmaty::Outcome::Draw => Outcome::Draw {
+                KnownOutcome::Draw => Outcome::Draw {
                     reason: DrawReason::Variant,
                 },
             })
@@ -360,13 +358,16 @@ impl<P: Position + Clone> Position for Game<P> {
         self.current_position().has_insufficient_material(color)
     }
 
-    fn variant_outcome(&self) -> Option<shakmaty::Outcome> {
+    fn variant_outcome(&self) -> shakmaty::Outcome {
         self.current_position().variant_outcome()
     }
 
-    fn outcome(&self) -> Option<shakmaty::Outcome> {
+    fn outcome(&self) -> shakmaty::Outcome {
         // A game has more ways to end than just the position
-        self.game_outcome().map(|outcome| outcome.into())
+        match self.game_outcome() {
+            Some(outcome) => outcome.into(),
+            None => shakmaty::Outcome::Unknown,
+        }
     }
 
     fn play_unchecked(&mut self, m: Move) {

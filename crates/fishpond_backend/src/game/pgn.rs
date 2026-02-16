@@ -1,6 +1,6 @@
 use std::fmt::Display;
 
-use shakmaty::{san::San, Position};
+use shakmaty::{san::San, KnownOutcome, Position};
 
 use crate::game::Game;
 
@@ -28,12 +28,12 @@ impl<P: Position + Clone> Display for Pgn<P> {
         writeln!(f, "[Black \"?\"]")?;
 
         let result = match self.game.outcome() {
-            Some(shakmaty::Outcome::Draw) => "1/2-1/2",
-            Some(shakmaty::Outcome::Decisive { winner }) => match winner {
+            shakmaty::Outcome::Known(KnownOutcome::Draw) => "1/2-1/2",
+            shakmaty::Outcome::Known(KnownOutcome::Decisive { winner }) => match winner {
                 shakmaty::Color::White => "1-0",
                 shakmaty::Color::Black => "0-1",
             },
-            None => "*",
+            shakmaty::Outcome::Unknown => "*",
         };
 
         writeln!(f, "[Result \"{result}\"]")?;
