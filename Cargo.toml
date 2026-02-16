@@ -10,7 +10,7 @@ members = ["crates/*"]
 
 [workspace.dependencies]
 bevy = { version = "0.18", default-features = false }
-rstest = "0.18.2"
+rstest = "0.26.1"
 shakmaty = "0.30.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
