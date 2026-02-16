@@ -52,11 +52,11 @@ impl<P: Position + Clone> Display for Pgn<P> {
             }
 
             // Move in SAN notation
-            write!(f, " {}", San::from_move(&current_position, r#move))?;
+            write!(f, " {}", San::from_move(&current_position, *r#move))?;
 
             // Update position
             // All moves in the game are expected to be validated already
-            current_position.play_unchecked(r#move);
+            current_position.play_unchecked(*r#move);
         }
 
         if result != "*" {

@@ -171,10 +171,9 @@ where
 
     /// The position with move history in UCI notation.
     pub fn uci_position_with_moves(&self) -> String {
-        let start_fen =
-            Fen::from_position(self.start_position.clone(), shakmaty::EnPassantMode::Legal);
+        let start_fen = Fen::from_position(&self.start_position, shakmaty::EnPassantMode::Legal);
         // FEN of the standard starting position
-        let start_pos_fen = Fen::from_position(Chess::new(), shakmaty::EnPassantMode::Legal);
+        let start_pos_fen = Fen::from_position(&Chess::new(), shakmaty::EnPassantMode::Legal);
 
         // Use "startpos" for standard starting position
         let uci_start = if start_pos_fen == start_fen {
@@ -230,7 +229,7 @@ where
         // Or: The current player can make a move which would result in a position repeated at least 3 times
         for r#move in self.current_position().legal_moves() {
             let mut new_position = self.current_position().clone();
-            new_position.play_unchecked(&r#move);
+            new_position.play_unchecked(r#move);
             let last_hash: Zobrist128 = new_position.zobrist_hash(shakmaty::EnPassantMode::Legal);
             let repetitions = self
                 .position_hashes
@@ -345,8 +344,8 @@ impl<P: Position + Clone> Position for Game<P> {
         self.current_position().fullmoves()
     }
 
-    fn into_setup(self, mode: shakmaty::EnPassantMode) -> shakmaty::Setup {
-        self.current_position.into_setup(mode)
+    fn to_setup(&self, mode: shakmaty::EnPassantMode) -> shakmaty::Setup {
+        self.current_position.to_setup(mode)
     }
 
     fn legal_moves(&self) -> shakmaty::MoveList {
@@ -370,7 +369,7 @@ impl<P: Position + Clone> Position for Game<P> {
         self.game_outcome().map(|outcome| outcome.into())
     }
 
-    fn play_unchecked(&mut self, m: &Move) {
+    fn play_unchecked(&mut self, m: Move) {
         // Track the move in the history
         self.actions.push(Action::Move(m.clone()));
         // Update the current position

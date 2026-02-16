@@ -1,7 +1,7 @@
 use std::{error::Error, fmt::Display, str::FromStr, time::Duration};
 
 use crate::game::Game;
-use shakmaty::{uci::Uci, Chess};
+use shakmaty::{uci::UciMove, Chess};
 
 #[derive(Debug)]
 pub struct UciParseError;
@@ -23,7 +23,7 @@ pub enum UciToGuiCmd {
         author: Option<String>,
     },
     BestMove {
-        uci_move: Uci,
+        uci_move: UciMove,
     },
 }
 
@@ -106,7 +106,7 @@ mod tests {
     #[case("uciok", UciToGuiCmd::UciOk)]
     #[case("id name Stockfish 16", UciToGuiCmd::Id { name: Some("Stockfish 16".to_string()), author: None })]
     #[case("id author the Stockfish developers (see AUTHORS file)", UciToGuiCmd::Id { name: None, author: Some("the Stockfish developers (see AUTHORS file)".to_string()) })]
-    #[case("bestmove e2e4 ponder e7e5", UciToGuiCmd::BestMove { uci_move: Uci::from_str("e2e4").unwrap() })]
+    #[case("bestmove e2e4 ponder e7e5", UciToGuiCmd::BestMove { uci_move: UciMove::from_str("e2e4").unwrap() })]
     fn test_uci_to_gui_cmd_valid(#[case] input: &str, #[case] expected: UciToGuiCmd) {
         assert_eq!(input.parse::<UciToGuiCmd>().unwrap(), expected);
     }

@@ -65,7 +65,7 @@ pub fn update_pieces(
 
         let last_move = game.moves().last();
         if let Some(last_move) = last_move
-            && let Ok(compare_position) = visualized_position.0.clone().play(last_move)
+            && let Ok(compare_position) = visualized_position.0.clone().play(*last_move)
             && compare_position == *game.current_position()
         {
             visualized_position.0 = game.current_position().clone();

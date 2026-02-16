@@ -130,21 +130,18 @@ fn handle_engine_search_result(
                 println!(
                     "Invalid UCI move {} in position {}",
                     search_result.uci_move,
-                    Fen::from_position(
-                        game.current_position().clone(),
-                        shakmaty::EnPassantMode::Legal
-                    )
+                    Fen::from_position(&*game.current_position(), shakmaty::EnPassantMode::Legal)
                 );
                 continue;
             };
 
             // Move is already validated when parsing UCI
-            game.play_unchecked(&r#move);
+            game.play_unchecked(r#move);
 
             println!(
                 "Played {} -> {}",
                 search_result.uci_move,
-                Fen::from_position(game.clone(), shakmaty::EnPassantMode::Legal)
+                Fen::from_position(&*game, shakmaty::EnPassantMode::Legal)
             );
 
             // Check if the game should be declared as draw
