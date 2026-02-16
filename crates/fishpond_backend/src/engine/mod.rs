@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::game::Game;
 use bevy::prelude::*;
 use bevy_local_commands::{LocalCommand, Process};
-use shakmaty::{uci::Uci, Chess};
+use shakmaty::{uci::UciMove, Chess};
 
 use crate::{chess::GameRef, process_log::LogSet};
 
@@ -55,7 +55,7 @@ pub struct SearchMove {
 #[derive(Debug, Message)]
 pub struct SearchResult {
     pub game_ref: GameRef,
-    pub uci_move: Uci,
+    pub uci_move: UciMove,
 }
 
 pub struct EnginePlugin;
@@ -139,7 +139,7 @@ fn handle_engine_to_gui(
             uci::UciToGuiCmd::BestMove { uci_move } => {
                 search_result_event.write(SearchResult {
                     game_ref: *game_ref,
-                    uci_move: uci_move.clone(),
+                    uci_move: *uci_move,
                 });
             }
         }

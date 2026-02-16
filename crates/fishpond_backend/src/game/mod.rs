@@ -1,11 +1,7 @@
 use std::{error::Error, fmt::Display};
 
 use bevy::prelude::*;
-use shakmaty::{
-    fen::Fen,
-    zobrist::{Zobrist128, ZobristHash},
-    Chess, Color, Move, Position,
-};
+use shakmaty::{fen::Fen, zobrist::Zobrist128, Chess, Color, KnownOutcome, Move, Position};
 
 pub mod pgn;
 
@@ -83,8 +79,10 @@ pub enum Outcome {
 impl From<Outcome> for shakmaty::Outcome {
     fn from(value: Outcome) -> Self {
         match value {
-            Outcome::Decisive { winner, reason: _ } => shakmaty::Outcome::Decisive { winner },
-            Outcome::Draw { reason: _ } => shakmaty::Outcome::Draw,
+            Outcome::Decisive { winner, reason: _ } => {
+                shakmaty::Outcome::Known(KnownOutcome::Decisive { winner })
+            }
+            Outcome::Draw { reason: _ } => shakmaty::Outcome::Known(KnownOutcome::Draw),
         }
     }
 }
@@ -171,10 +169,9 @@ where
 
     /// The position with move history in UCI notation.
     pub fn uci_position_with_moves(&self) -> String {
-        let start_fen =
-            Fen::from_position(self.start_position.clone(), shakmaty::EnPassantMode::Legal);
+        let start_fen = Fen::from_position(&self.start_position, shakmaty::EnPassantMode::Legal);
         // FEN of the standard starting position
-        let start_pos_fen = Fen::from_position(Chess::new(), shakmaty::EnPassantMode::Legal);
+        let start_pos_fen = Fen::from_position(&Chess::new(), shakmaty::EnPassantMode::Legal);
 
         // Use "startpos" for standard starting position
         let uci_start = if start_pos_fen == start_fen {
@@ -197,7 +194,7 @@ where
 
     /// Determine if a draw can be declared.
     pub fn can_declare_draw(&self) -> Option<DeclareDrawReason> {
-        if self.outcome().is_some() {
+        if self.outcome().is_known() {
             return None;
         }
 
@@ -230,7 +227,7 @@ where
         // Or: The current player can make a move which would result in a position repeated at least 3 times
         for r#move in self.current_position().legal_moves() {
             let mut new_position = self.current_position().clone();
-            new_position.play_unchecked(&r#move);
+            new_position.play_unchecked(r#move);
             let last_hash: Zobrist128 = new_position.zobrist_hash(shakmaty::EnPassantMode::Legal);
             let repetitions = self
                 .position_hashes
@@ -265,15 +262,15 @@ where
     ///
     /// Returns [`None`] if the game is still ongoing.
     pub fn game_outcome(&self) -> Option<Outcome> {
-        if let Some(variant_outcome) = self.variant_outcome() {
+        if let Some(variant_outcome) = self.variant_outcome().known() {
             // An outcome determined by the variant
             // Just needs to be converted and the variant reason attached
             Some(match variant_outcome {
-                shakmaty::Outcome::Decisive { winner } => Outcome::Decisive {
+                KnownOutcome::Decisive { winner } => Outcome::Decisive {
                     winner,
                     reason: DecisiveReason::Variant,
                 },
-                shakmaty::Outcome::Draw => Outcome::Draw {
+                KnownOutcome::Draw => Outcome::Draw {
                     reason: DrawReason::Variant,
                 },
             })
@@ -345,8 +342,8 @@ impl<P: Position + Clone> Position for Game<P> {
         self.current_position().fullmoves()
     }
 
-    fn into_setup(self, mode: shakmaty::EnPassantMode) -> shakmaty::Setup {
-        self.current_position.into_setup(mode)
+    fn to_setup(&self, mode: shakmaty::EnPassantMode) -> shakmaty::Setup {
+        self.current_position.to_setup(mode)
     }
 
     fn legal_moves(&self) -> shakmaty::MoveList {
@@ -361,18 +358,21 @@ impl<P: Position + Clone> Position for Game<P> {
         self.current_position().has_insufficient_material(color)
     }
 
-    fn variant_outcome(&self) -> Option<shakmaty::Outcome> {
+    fn variant_outcome(&self) -> shakmaty::Outcome {
         self.current_position().variant_outcome()
     }
 
-    fn outcome(&self) -> Option<shakmaty::Outcome> {
+    fn outcome(&self) -> shakmaty::Outcome {
         // A game has more ways to end than just the position
-        self.game_outcome().map(|outcome| outcome.into())
+        match self.game_outcome() {
+            Some(outcome) => outcome.into(),
+            None => shakmaty::Outcome::Unknown,
+        }
     }
 
-    fn play_unchecked(&mut self, m: &Move) {
+    fn play_unchecked(&mut self, m: Move) {
         // Track the move in the history
-        self.actions.push(Action::Move(m.clone()));
+        self.actions.push(Action::Move(m));
         // Update the current position
         self.current_position.play_unchecked(m);
 

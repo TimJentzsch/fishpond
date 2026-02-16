@@ -54,7 +54,9 @@ pub fn update_pieces(
     mut piece_query: Query<(Entity, &mut Node, &mut ImageNode, &mut RenderedPiece)>,
     asset_server: Res<AssetServer>,
 ) -> Result<(), BevyError> {
-    let game = game_query.single()?;
+    let Ok(game) = game_query.single() else {
+        return Ok(());
+    };
     let (container, mut visualized_position) = piece_container_query.single_mut()?;
 
     if let Some(visualized_position) = &mut visualized_position {
@@ -65,7 +67,7 @@ pub fn update_pieces(
 
         let last_move = game.moves().last();
         if let Some(last_move) = last_move
-            && let Ok(compare_position) = visualized_position.0.clone().play(last_move)
+            && let Ok(compare_position) = visualized_position.0.clone().play(*last_move)
             && compare_position == *game.current_position()
         {
             visualized_position.0 = game.current_position().clone();
