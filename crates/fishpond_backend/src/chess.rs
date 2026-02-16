@@ -130,7 +130,7 @@ fn handle_engine_search_result(
                 println!(
                     "Invalid UCI move {} in position {}",
                     search_result.uci_move,
-                    Fen::from_position(&*game.current_position(), shakmaty::EnPassantMode::Legal)
+                    Fen::from_position(game.current_position(), shakmaty::EnPassantMode::Legal)
                 );
                 continue;
             };

@@ -139,7 +139,7 @@ fn handle_engine_to_gui(
             uci::UciToGuiCmd::BestMove { uci_move } => {
                 search_result_event.write(SearchResult {
                     game_ref: *game_ref,
-                    uci_move: uci_move.clone(),
+                    uci_move: *uci_move,
                 });
             }
         }

@@ -371,7 +371,7 @@ impl<P: Position + Clone> Position for Game<P> {
 
     fn play_unchecked(&mut self, m: Move) {
         // Track the move in the history
-        self.actions.push(Action::Move(m.clone()));
+        self.actions.push(Action::Move(m));
         // Update the current position
         self.current_position.play_unchecked(m);
 
